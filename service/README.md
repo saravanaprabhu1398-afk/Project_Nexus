@@ -105,6 +105,19 @@ against the superuser configuration it fails with six distinct reasons.
 SQLite has no privilege system, so this cannot be evidenced there. Gate 2
 evidence has to come from PostgreSQL.
 
+### What the model is used for in Phase 1
+
+One metered call per investigation produces an `observation_summary`: a
+restatement of what the evidence reports. **It is not a diagnosis.** Root-cause
+reasoning, confidence banding and the guardrail that rejects unbound claims are
+Phase 3 (NX-081, NX-082, NX-087).
+
+It exists so the model path is exercised end to end from Phase 1 - token,
+latency and cost telemetry are real rather than structurally zero, and the
+untrusted-content wrapper sits on the path from the first model call rather than
+being added over it later. With the `echo` adapter the output is a deterministic
+echo, so it will look like the prompt; that is the stand-in behaving correctly.
+
 ### The gateway invariant
 
 There is exactly one way to invoke a tool, and it requires a `PolicyDecision`
@@ -156,9 +169,14 @@ Gate 1 evidence. All are covered by `tests/test_api_investigations.py`.
 - [x] Every request carries an audit and trace identifier
 - [x] Failed model or tool calls produce controlled errors
 - [x] Unit and integration tests pass
-- [x] Basic latency, usage, and cost metrics are visible
+- [x] Failed **model** calls produce controlled errors (`tests/test_model_failure.py`)
+- [x] Basic latency, usage, and cost metrics are visible - token counts are real,
+      not structurally zero (`tests/test_telemetry_persistence.py`)
+- [x] Audit and trace are durable, not process memory
 - [x] Schema is versioned and reversible (NX-030)
-- [ ] The service deploys repeatedly through CI/CD *(workflow written; needs a target environment)*
+- [x] Architecture decisions recorded ([`../docs/adr/`](../docs/adr/))
+- [ ] The service deploys repeatedly through CI/CD - **blocked on D-02**
+      (hosting and residency). CI builds the image; there is nowhere to deploy it yet.
 
 ---
 
@@ -168,9 +186,10 @@ These are honest omissions, not oversights. Each maps to a backlog item.
 
 | Gap | Item | Note |
 |---|---|---|
-| Real model provider | NX-008 | Only the deterministic `echo` adapter exists; token and cost metrics read zero until a real provider is wired. Blocked on D-06 (Gate 1). |
-| Persistent audit sink | NX-022 | `AuditRow` and `AuditRepository` exist; the app currently wires the in-memory sink. Swap before any real connector. |
-| Trace step persistence | NX-032 | `TraceStep` table exists; the loop logs but does not yet write rows. |
+| Real model provider | NX-008 | Only the deterministic `echo` adapter. The metering path is real and token counts are non-zero, but **cost figures are estimates against a zero rate card** until a provider is contracted. Blocked on D-06. |
+| Deploy target | - | **Blocked on D-02.** The only thing standing between Phase 1 and a complete Gate 1 pack. |
+| Metrics backend | NX-036 | Usage, latency and cost are emitted as structured log events. There is no exporter and no dashboard yet. |
+| Distributed tracing | NX-032 | Trace *steps* are persisted to the database. OpenTelemetry spans are not yet wired. |
 | Redis | NX-023 | Configured, not yet used. Session and cache land with Phase 2. |
 | SSE progress stream | NX-004 | Polling works; the event stream is Phase 1 P1. |
 | Enterprise identity | NX-106 | Dev headers today. The *claims contract* is final, so Phase 4 swaps the issuer only. |

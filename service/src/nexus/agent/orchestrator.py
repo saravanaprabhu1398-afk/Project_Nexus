@@ -8,13 +8,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from nexus.agent.budget import Budget, BudgetTracker
+from nexus.agent.budget import Budget, BudgetExceeded, BudgetTracker
 from nexus.agent.loop import InvestigationLoop, LoopResult, PlanStep, StopReason
-from nexus.agent.model import ModelAdapter
+from nexus.agent.metering import MeteredModelAdapter
+from nexus.agent.model import ModelAdapter, ModelMessage, ModelTier, quarantine
 from nexus.config import Settings
 from nexus.domain.models import InvestigationStatus, ResourceRef, Sensitivity, Subject
 from nexus.governance.pdp import PolicyDecisionPoint
 from nexus.observability.logging import get_logger
+from nexus.observability.trace import NullTraceSink, TraceSink
 from nexus.tools.contract import ToolCall
 from nexus.tools.gateway import ToolGateway
 from nexus.tools.registry import ToolRegistry
@@ -28,6 +30,7 @@ class InvestigationOutcome:
     loop: LoopResult
     consumed: dict[str, int]
     failure_code: str | None = None
+    observation_summary: str | None = None
 
 
 class Orchestrator:
@@ -39,12 +42,14 @@ class Orchestrator:
         gateway: ToolGateway,
         pdp: PolicyDecisionPoint,
         model: ModelAdapter,
+        trace: TraceSink | None = None,
     ) -> None:
         self._settings = settings
         self._registry = registry
         self._gateway = gateway
         self._pdp = pdp
         self._model = model
+        self._trace = trace or NullTraceSink()
 
     def _budget(self) -> BudgetTracker:
         s = self._settings
@@ -84,6 +89,7 @@ class Orchestrator:
             pdp=self._pdp,
             budget=budget,
             fanout=self._settings.tool_fanout,
+            trace=self._trace,
         )
 
         plan = self._static_plan(resource)
@@ -94,6 +100,9 @@ class Orchestrator:
             plan=plan,
             sensitivity_ceiling=sensitivity_ceiling,
         )
+
+        model = MeteredModelAdapter(self._model, budget, investigation_id=investigation_id)
+        summary = await self._summarize(model, result)
 
         status = (
             InvestigationStatus.COMPLETE if result.evidence else InvestigationStatus.NEEDS_INPUT
@@ -107,7 +116,50 @@ class Orchestrator:
             missing_count=len(result.missing),
             **budget.snapshot(),
         )
-        return InvestigationOutcome(status=status, loop=result, consumed=budget.snapshot())
+        return InvestigationOutcome(
+            status=status,
+            loop=result,
+            consumed=budget.snapshot(),
+            observation_summary=summary,
+        )
+
+    async def _summarize(self, model: MeteredModelAdapter, result: LoopResult) -> str | None:
+        """State what the evidence reports. This is NOT a diagnosis.
+
+        Root-cause reasoning, confidence banding and the guardrail that rejects
+        unbound claims are Phase 3 (NX-081, NX-082, NX-087). What this exists to
+        do in Phase 1 is exercise the model path end to end, so token, latency
+        and cost telemetry are real rather than structurally always zero, and so
+        the untrusted-content wrapper sits on the path from the first model call
+        rather than being added over it later.
+        """
+        if not result.evidence:
+            return None
+
+        evidence_block = "\n".join(
+            f"[{e.citation_key}] {e.source_system} {e.evidence_type}: {e.content_summary}"
+            for e in result.evidence
+        )
+        messages = [
+            ModelMessage(
+                role="system",
+                content=(
+                    "State only what the evidence below reports. Do not infer a "
+                    "cause and do not add anything the evidence does not say. "
+                    "Refer to items by their citation key."
+                ),
+            ),
+            ModelMessage(role="user", content=quarantine(evidence_block, source="tool_output")),
+        ]
+        try:
+            response = await model.complete(messages, tier=ModelTier.SMALL)
+        except BudgetExceeded:
+            log.info("summary_skipped_budget_exhausted")
+            return None
+        except Exception:  # noqa: BLE001 - a model failure degrades, never crashes
+            log.exception("summary_model_call_failed")
+            return None
+        return response.text
 
     def _static_plan(self, resource: ResourceRef) -> list[PlanStep]:
         """Phase 1 stand-in for the Planner (NX-075).

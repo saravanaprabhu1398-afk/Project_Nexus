@@ -13,8 +13,10 @@ NX-075 in Phase 3. What is already load-bearing here and must not change:
 from __future__ import annotations
 
 import asyncio
+import time
 from dataclasses import dataclass, field
 from enum import StrEnum
+from itertools import count
 
 from nexus.agent.budget import BudgetExceeded, BudgetTracker
 from nexus.api.errors import ErrorCode, NexusError
@@ -22,6 +24,7 @@ from nexus.domain.evidence import Evidence, MissingEvidence
 from nexus.domain.models import Sensitivity, StepOutcome, Subject
 from nexus.governance.pdp import PolicyDecisionPoint, PolicyRequest
 from nexus.observability.logging import get_logger
+from nexus.observability.trace import NullTraceSink, TraceEvent, TraceSink, hash_arguments, utcnow
 from nexus.tools.contract import ToolCall
 from nexus.tools.gateway import ToolGateway
 from nexus.tools.registry import ToolRegistry
@@ -63,12 +66,15 @@ class InvestigationLoop:
         pdp: PolicyDecisionPoint,
         budget: BudgetTracker,
         fanout: int = 4,
+        trace: TraceSink | None = None,
     ) -> None:
         self._registry = registry
         self._gateway = gateway
         self._pdp = pdp
         self._budget = budget
         self._fanout = fanout
+        self._trace = trace or NullTraceSink()
+        self._seq = count(1)
 
     async def run(
         self,
@@ -140,8 +146,21 @@ class InvestigationLoop:
     ) -> StepOutcome:
         async with semaphore:
             self._budget.record_step()
+            seq = next(self._seq)
+            started_at = utcnow()
+            started = time.monotonic()
             contract = self._registry.get(step.call.tool_name)
             if contract is None:
+                await self._emit(
+                    subject,
+                    investigation_id,
+                    seq,
+                    step,
+                    started_at,
+                    started,
+                    outcome=StepOutcome.UNAVAILABLE,
+                    error_class="RESOURCE_NOT_FOUND",
+                )
                 result.missing.append(
                     MissingEvidence(
                         what=step.why,
@@ -181,11 +200,23 @@ class InvestigationLoop:
                         remediation=exc.remediation,
                     )
                 )
-                return (
+                outcome = (
                     StepOutcome.DENIED
                     if exc.code in {ErrorCode.POLICY_DENIED, ErrorCode.AUTHZ_DENIED}
                     else StepOutcome.UNAVAILABLE
                 )
+                await self._emit(
+                    subject,
+                    investigation_id,
+                    seq,
+                    step,
+                    started_at,
+                    started,
+                    outcome=outcome,
+                    error_class=str(exc.code),
+                    decision_id=decision.id,
+                )
+                return outcome
 
             if outcome is StepOutcome.OK and tool_result is not None:
                 result.evidence.extend(tool_result.evidence)
@@ -197,7 +228,51 @@ class InvestigationLoop:
                         source_system=step.call.resource.system,
                     )
                 )
+            await self._emit(
+                subject,
+                investigation_id,
+                seq,
+                step,
+                started_at,
+                started,
+                outcome=outcome,
+                decision_id=decision.id,
+            )
             return outcome
+
+    async def _emit(
+        self,
+        subject: Subject,
+        investigation_id: str,
+        seq: int,
+        step: PlanStep,
+        started_at: object,
+        started_monotonic: float,
+        *,
+        outcome: StepOutcome,
+        error_class: str | None = None,
+        decision_id: str | None = None,
+    ) -> None:
+        """Persisting the trace must never break the investigation."""
+        try:
+            await self._trace.record(
+                TraceEvent(
+                    investigation_id=investigation_id,
+                    tenant_id=subject.tenant_id,
+                    seq=seq,
+                    step_type="tool_call",
+                    tool_name=step.call.tool_name,
+                    input_hash=hash_arguments(step.call.arguments),
+                    policy_decision_id=decision_id,
+                    outcome=str(outcome),
+                    error_class=error_class,
+                    latency_ms=int((time.monotonic() - started_monotonic) * 1000),
+                    started_at=started_at,  # type: ignore[arg-type]
+                    ended_at=utcnow(),
+                )
+            )
+        except Exception:  # noqa: BLE001 - trace loss must not fail the work
+            log.exception("trace_write_failed", investigation_id=investigation_id, seq=seq)
 
 
 def _waves(plan: list[PlanStep]) -> list[list[PlanStep]]:

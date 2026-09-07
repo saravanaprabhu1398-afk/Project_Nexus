@@ -70,6 +70,9 @@ class InvestigationOut(BaseModel):
     completed_at: datetime | None
     consumed: dict[str, int] | None
     failure_code: str | None
+    #: What the evidence reports. Not a diagnosis - root-cause reasoning,
+    #: confidence and the groundedness guardrail are Phase 3.
+    observation_summary: str | None = None
     evidence: list[EvidenceOut] = []
     missing_evidence: list[MissingEvidenceOut] = []
 

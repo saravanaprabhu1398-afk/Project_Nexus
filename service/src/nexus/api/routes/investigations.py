@@ -23,7 +23,11 @@ from nexus.api.schemas import (
     MissingEvidenceOut,
 )
 from nexus.db.models import EvidenceRow, Investigation
-from nexus.db.repository import EvidenceRepository, InvestigationRepository
+from nexus.db.repository import (
+    AuditRepository,
+    EvidenceRepository,
+    InvestigationRepository,
+)
 from nexus.db.session import get_session
 from nexus.domain.models import (
     InvestigationStatus,
@@ -175,6 +179,7 @@ async def _execute(
             failure_code=outcome.failure_code,
         )
     app.state.missing_evidence[investigation_id] = outcome.loop.missing
+    app.state.observation_summary[investigation_id] = outcome.observation_summary
 
 
 @router.get("/{investigation_id}", response_model=InvestigationOut)
@@ -209,6 +214,7 @@ async def get_investigation(
         completed_at=row.completed_at,
         consumed=row.consumed,
         failure_code=row.failure_code,
+        observation_summary=request.app.state.observation_summary.get(investigation_id),
         evidence=[_evidence_out(e) for e in evidence],
         missing_evidence=[
             MissingEvidenceOut(
@@ -234,29 +240,31 @@ async def list_evidence(
 @router.get("/{investigation_id}/audit", response_model=list[AuditEntryOut])
 async def get_audit(
     investigation_id: str,
-    request: Request,
     subject: CurrentSubject,
 ) -> list[AuditEntryOut]:
     """US-08: an auditor can reconstruct the complete request, access, tool,
-    policy and outcome trace for one incident."""
-    entries = [
-        e
-        for e in request.app.state.audit.entries()
-        if e.investigation_id == investigation_id and e.tenant_id == subject.tenant_id
-    ]
+    policy and outcome trace for one incident.
+
+    Read from the append-only table rather than process memory, so the trail
+    survives a restart and is scoped to the caller's tenant by the repository.
+    """
+    async with get_session() as session:
+        rows = await AuditRepository(session).list_for_investigation(
+            tenant_id=subject.tenant_id, investigation_id=investigation_id
+        )
     return [
         AuditEntryOut(
-            occurred_at=e.occurred_at,
-            action=str(e.action),
-            subject_id=e.subject_id,
-            resource=e.resource,
-            purpose=e.purpose,
-            policy_id=e.policy_id,
-            decision=e.decision,
-            reason=e.reason,
-            result_status=e.result_status,
+            occurred_at=r.occurred_at,
+            action=r.action,
+            subject_id=r.subject_id,
+            resource=r.resource,
+            purpose=r.purpose,
+            policy_id=r.policy_id,
+            decision=r.decision,
+            reason=r.reason,
+            result_status=r.result_status,
         )
-        for e in entries
+        for r in rows
     ]
 
 

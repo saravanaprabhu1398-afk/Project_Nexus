@@ -47,6 +47,8 @@ _STATUS: dict[ErrorCode, int] = {
     ErrorCode.UPSTREAM_RATE_LIMITED: 429,
     ErrorCode.SERVICE_DISABLED: 503,
     ErrorCode.UPSTREAM_UNAVAILABLE: 503,
+    ErrorCode.MODEL_UNAVAILABLE: 503,
+    ErrorCode.MODEL_OUTPUT_INVALID: 502,
     ErrorCode.UPSTREAM_TIMEOUT: 504,
 }
 

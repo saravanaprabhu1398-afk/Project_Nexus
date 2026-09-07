@@ -14,9 +14,10 @@ from nexus.api.errors import NexusError
 from nexus.api.routes import health, investigations
 from nexus.config import Settings, get_settings
 from nexus.db.session import dispose_engine, init_engine
-from nexus.governance.audit import InMemoryAuditSink
+from nexus.governance.audit import DatabaseAuditSink
 from nexus.governance.pdp import StaticAllowlistPDP
 from nexus.observability.logging import configure_logging, get_logger
+from nexus.observability.trace import DatabaseTraceSink
 from nexus.tools.gateway import ToolGateway
 from nexus.tools.mock.databricks_mock import MOCK_TOOLS
 from nexus.tools.registry import ToolRegistry
@@ -56,7 +57,10 @@ def build_app(settings: Settings | None = None) -> FastAPI:
     for contract in MOCK_TOOLS:
         registry.register(contract)
 
-    audit = InMemoryAuditSink()
+    # Durable, append-only. On PostgreSQL the application role cannot alter or
+    # remove a record once written (NX-022).
+    audit = DatabaseAuditSink()
+    trace = DatabaseTraceSink(retention_days=settings.retention_trace_days)
     pdp = StaticAllowlistPDP(
         allowed_tools=registry.names(),
         # Phase 0 doc 02 section 4 supplies the real pilot scope prefixes.
@@ -68,16 +72,19 @@ def build_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.registry = registry
     app.state.audit = audit
+    app.state.trace = trace
     app.state.pdp = pdp
     app.state.prompt_version = PROMPT_VERSION
     app.state.policy_version = POLICY_VERSION
     app.state.missing_evidence = {}
+    app.state.observation_summary = {}
     app.state.orchestrator = Orchestrator(
         settings=settings,
         registry=registry,
         gateway=gateway,
         pdp=pdp,
         model=EchoModelAdapter(),
+        trace=trace,
     )
 
     app.include_router(health.router)

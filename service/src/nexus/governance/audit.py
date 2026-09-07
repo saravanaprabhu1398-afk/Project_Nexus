@@ -61,3 +61,36 @@ class InMemoryAuditSink(AuditSink):
     def entries(self) -> tuple[AuditRecord, ...]:
         """Read-only view. There is deliberately no mutation accessor."""
         return tuple(self._entries)
+
+
+class DatabaseAuditSink(AuditSink):
+    """Writes to the append-only audit_record table (NX-022).
+
+    On PostgreSQL the application role holds SELECT and INSERT on that table and
+    nothing else, so a record cannot be altered or removed once written. A write
+    failure propagates: the gateway turns it into AuditWriteFailed and the tool
+    call is not treated as successful.
+    """
+
+    async def record(self, entry: AuditRecord) -> None:
+        from nexus.db.models import AuditRow
+        from nexus.db.repository import AuditRepository
+        from nexus.db.session import get_session
+
+        row = AuditRow(
+            id=entry.id,
+            tenant_id=entry.tenant_id,
+            investigation_id=entry.investigation_id,
+            subject_id=entry.subject_id,
+            occurred_at=entry.occurred_at,
+            action=str(entry.action),
+            resource=entry.resource,
+            purpose=entry.purpose,
+            policy_id=entry.policy_id,
+            decision=entry.decision,
+            reason=entry.reason,
+            result_status=entry.result_status,
+            request_hash=entry.request_hash,
+        )
+        async with get_session() as session:
+            await AuditRepository(session).append(row, tenant_id=entry.tenant_id)
