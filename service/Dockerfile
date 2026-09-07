@@ -8,6 +8,8 @@ COPY pyproject.toml ./
 RUN uv pip install --system --no-cache .
 
 COPY src/ ./src/
+COPY alembic.ini ./
+COPY migrations/ ./migrations/
 ENV PYTHONPATH=/app/src
 
 RUN useradd --create-home --uid 10001 nexus

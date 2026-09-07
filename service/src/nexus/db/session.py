@@ -12,8 +12,6 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from nexus.db.models import Base
-
 _engine: AsyncEngine | None = None
 _factory: async_sessionmaker[AsyncSession] | None = None
 
@@ -29,14 +27,6 @@ def session_factory() -> async_sessionmaker[AsyncSession]:
     if _factory is None:
         raise RuntimeError("init_engine() must be called before session_factory()")
     return _factory
-
-
-async def create_all() -> None:
-    """Development and test convenience. Deployed environments use Alembic (NX-030)."""
-    if _engine is None:
-        raise RuntimeError("init_engine() must be called first")
-    async with _engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 
 
 async def dispose_engine() -> None:

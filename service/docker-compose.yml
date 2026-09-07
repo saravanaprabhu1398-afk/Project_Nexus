@@ -19,11 +19,24 @@ services:
       interval: 5s
       retries: 10
 
+  # Migrations are a deploy step. The api waits for this to finish rather than
+  # creating schema itself, so replicas cannot race (NX-030).
+  migrate:
+    build: .
+    depends_on:
+      postgres: {condition: service_healthy}
+    environment:
+      NEXUS_DATABASE_URL: postgresql+asyncpg://nexus:nexus@postgres:5432/nexus
+      NEXUS_DB_APP_ROLE: nexus
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+
   api:
     build: .
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
+      migrate: {condition: service_completed_successfully}
     environment:
       NEXUS_ENV: dev
       NEXUS_DATABASE_URL: postgresql+asyncpg://nexus:nexus@postgres:5432/nexus

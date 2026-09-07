@@ -1,0 +1,43 @@
+# NEXUS database migrations (NX-030)
+
+Alembic, async, configured from `NEXUS_DATABASE_URL`. No connection string is
+stored in `alembic.ini`.
+
+## Commands
+
+    make migrate                       # upgrade to head
+    make migrate-down                  # step back one revision
+    make revision m="add x"            # autogenerate a new revision
+    uv run alembic current             # show the applied revision
+    uv run alembic history --verbose   # show the chain
+
+Migrations are a **deploy step, not an application startup step**. The service
+does not create or alter schema on boot: several replicas starting at once would
+race, and a failed migration would surface as a crash loop rather than a failed
+deploy. `docker compose` runs a one-shot `migrate` service before `api` starts.
+
+## Rollback
+
+Every revision implements `downgrade()`, and `tests/test_migrations.py` asserts
+that upgrade -> downgrade -> upgrade leaves the schema intact. Rollback is
+rehearsed rather than assumed (delivery plan Phase 6; SDD 14).
+
+Stepping back a revision that removed a column also discards what was in it.
+Rolling back a *release* is routine; rolling back a *migration* against an
+environment holding real data needs a backup taken first.
+
+## The audit table grant (NX-022)
+
+`audit_record` is append-only. On PostgreSQL, revision 0001 withdraws the
+UPDATE and DELETE privileges from the application role, so the guarantee is
+enforced by the database rather than by convention in the repository layer.
+The role name comes from `NEXUS_DB_APP_ROLE` (default `nexus`).
+
+SQLite has no privilege system, so the revision skips this step and the
+guarantee rests on `AuditRepository` exposing no mutating method. That is
+adequate for local development and is *not* adequate for the pilot - Gate 2
+evidence must be taken from PostgreSQL.
+
+A privileged operator retains the ability to remove audit rows. That is
+deliberate: retention and legal hold need a path. It is a separate privileged
+process, never the application role.

@@ -13,6 +13,7 @@ dependencies = [
     "asyncpg>=0.30",
     "redis>=5.2",
     "structlog>=24.4",
+    "alembic>=1.14",
     "httpx>=0.28",
 ]
 
@@ -34,7 +35,7 @@ packages = ["src/nexus"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 
 [tool.ruff]
 line-length = 100

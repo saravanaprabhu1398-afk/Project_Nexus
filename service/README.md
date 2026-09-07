@@ -15,8 +15,9 @@ there and in [`../Phase_0_Package/10_Product_Backlog.md`](../Phase_0_Package/10_
 ```bash
 cd service
 uv sync --python 3.12
+make migrate          # apply the schema; the service does not create it on boot
 uv run pytest -q
-uv run uvicorn nexus.main:app --reload --port 8000
+make run              # migrates, then serves on :8000
 ```
 
 Drive one investigation end to end against the mock connector:
@@ -49,7 +50,32 @@ around them** without a gate decision.
 | **Policy decision in the tool call path** | `governance/pdp.py`, `tools/gateway.py` | "100% of tool calls policy-checked" applies from the first Databricks call in Phase 2, not from Phase 4 (ADR-03). Phase 4 replaces the *implementation* behind this interface; the call path never changes. |
 | **Append-only audit, written before the result returns** | `governance/audit.py` | An unauditable tool call must not happen. A failed audit write raises. |
 | **Retention with a working purge** | `db/repository.py::RetentionPurge` | Never create a store without a delete path (ADR-11). |
+| **Migrations as the only schema path** | `migrations/` | The service never creates or alters schema on boot: replicas would race, and a bad migration should fail the deploy rather than crash-loop the service. |
 | **Budgets on every dimension** | `agent/budget.py` | Cost per useful diagnosis decides Gate 6. Exhaustion yields a reported partial result, never an unbounded loop. |
+
+### Migrations (NX-030)
+
+`make migrate` applies the schema; `make revision m="..."` autogenerates a new
+one; `make migrate-down` steps back. Details in
+[`migrations/README`](migrations/README).
+
+Two guards make the chain worth trusting, both in `tests/test_migrations.py`:
+
+* **Drift** - `test_migrations_do_not_drift_from_the_models` runs autogenerate
+  against a migrated database and asserts the diff is empty. Add a column to
+  `db/models.py` without a revision and this fails immediately, naming the
+  column, instead of the mismatch surfacing at deploy time.
+* **Rollback** - `test_upgrade_downgrade_upgrade_is_lossless` takes the schema
+  to head, back to base, and forward again, then asserts tables, indexes and
+  metadata all match. Rollback is rehearsed rather than assumed.
+
+Tests build their schema by running the real migrations, not
+`metadata.create_all`, so the migration is the single source of truth.
+
+On PostgreSQL, revision 0001 also makes `audit_record` append-only for the
+application role (NX-022), so that guarantee is enforced by the database rather
+than by convention in the repository layer. SQLite has no privilege system and
+skips this - which is why Gate 2 evidence has to come from PostgreSQL.
 
 ### The gateway invariant
 
@@ -103,6 +129,7 @@ Gate 1 evidence. All are covered by `tests/test_api_investigations.py`.
 - [x] Failed model or tool calls produce controlled errors
 - [x] Unit and integration tests pass
 - [x] Basic latency, usage, and cost metrics are visible
+- [x] Schema is versioned and reversible (NX-030)
 - [ ] The service deploys repeatedly through CI/CD *(workflow written; needs a target environment)*
 
 ---
@@ -113,14 +140,14 @@ These are honest omissions, not oversights. Each maps to a backlog item.
 
 | Gap | Item | Note |
 |---|---|---|
-| **Alembic migrations** | NX-030 | Schema is created via `create_all`. Needed before any environment holds data worth keeping - do this first. |
 | Real model provider | NX-008 | Only the deterministic `echo` adapter exists; token and cost metrics read zero until a real provider is wired. Blocked on D-06 (Gate 1). |
 | Persistent audit sink | NX-022 | `AuditRow` and `AuditRepository` exist; the app currently wires the in-memory sink. Swap before any real connector. |
 | Trace step persistence | NX-032 | `TraceStep` table exists; the loop logs but does not yet write rows. |
 | Redis | NX-023 | Configured, not yet used. Session and cache land with Phase 2. |
 | SSE progress stream | NX-004 | Polling works; the event stream is Phase 1 P1. |
 | Enterprise identity | NX-106 | Dev headers today. The *claims contract* is final, so Phase 4 swaps the issuer only. |
-| Timezone on read-back | - | SQLite drops tzinfo on `created_at`. Postgres does not; cosmetic locally. |
+| Timezone on read-back | - | SQLite drops tzinfo on `created_at`. PostgreSQL renders these columns `TIMESTAMP WITH TIME ZONE`, so this is local-only. |
+| PostgreSQL verified only by rendered SQL | NX-030 | The append-only grant and the PostgreSQL DDL were checked with `alembic upgrade head --sql`. A live PostgreSQL round trip runs in CI (`migrations-postgres`); it has not been executed on a developer machine yet. |
 
 ---
 

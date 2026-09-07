@@ -13,7 +13,7 @@ from nexus.agent.providers.echo import EchoModelAdapter
 from nexus.api.errors import NexusError
 from nexus.api.routes import health, investigations
 from nexus.config import Settings, get_settings
-from nexus.db.session import create_all, dispose_engine, init_engine
+from nexus.db.session import dispose_engine, init_engine
 from nexus.governance.audit import InMemoryAuditSink
 from nexus.governance.pdp import StaticAllowlistPDP
 from nexus.observability.logging import configure_logging, get_logger
@@ -33,8 +33,11 @@ def build_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        # Schema is applied by `alembic upgrade head` as a deploy step, never
+        # here: several replicas booting at once would race, and a failed
+        # migration should fail the deploy rather than crash-loop the service
+        # (NX-030, migrations/README).
         init_engine(settings.database_url)
-        await create_all()
         log.info("nexus_started", env=settings.env, provider=settings.model_provider)
         try:
             yield
