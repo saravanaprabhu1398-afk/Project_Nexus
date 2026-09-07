@@ -1,0 +1,137 @@
+# NEXUS Agent Service - Phase 1
+
+Core agent platform foundation for NEXUS, the read-only AI investigator for
+data-platform incidents.
+
+**Phase 1 of 6** (delivery plan Weeks 2-3). Design authority:
+[`../NEXUS_Solution_Design_Document_v1.0.md`](../NEXUS_Solution_Design_Document_v1.0.md).
+Backlog IDs (`NX-nnn`) and decisions (`ADR-nn`) referenced in code comments live
+there and in [`../Phase_0_Package/10_Product_Backlog.md`](../Phase_0_Package/10_Product_Backlog.md).
+
+---
+
+## Quick start
+
+```bash
+cd service
+uv sync --python 3.12
+uv run pytest -q
+uv run uvicorn nexus.main:app --reload --port 8000
+```
+
+Drive one investigation end to end against the mock connector:
+
+```bash
+curl -X POST http://127.0.0.1:8000/v1/investigations \
+  -H 'Content-Type: application/json' \
+  -H 'X-Nexus-User: eng-1' -H 'X-Nexus-Tenant: pilot-a' \
+  -d '{"question":"Why did customer_daily_ingestion fail?",
+       "resource_refs":[{"type":"databricks_job","id":"1234","workspace":"ws"}]}'
+```
+
+Then `GET /v1/investigations/{id}` for the result, `/evidence` for the cited
+artifacts, `/audit` for the trail. Interactive docs at `/docs`.
+
+`make check` runs lint, types, and tests. `make up` runs the stack on Postgres
+and Redis via Docker.
+
+---
+
+## What is deliberately load-bearing
+
+Five things are built now even though they harden later. Each is here because
+retrofitting it is a migration rather than a change. **Do not remove or route
+around them** without a gate decision.
+
+| Thing | Where | Why now |
+|---|---|---|
+| **Tenant on every row and every query** | `db/repository.py` | Retrofitting tenancy after data exists is a migration (ADR-10). `test_no_repository_exposes_an_untenanted_query` guards the rule itself. |
+| **Policy decision in the tool call path** | `governance/pdp.py`, `tools/gateway.py` | "100% of tool calls policy-checked" applies from the first Databricks call in Phase 2, not from Phase 4 (ADR-03). Phase 4 replaces the *implementation* behind this interface; the call path never changes. |
+| **Append-only audit, written before the result returns** | `governance/audit.py` | An unauditable tool call must not happen. A failed audit write raises. |
+| **Retention with a working purge** | `db/repository.py::RetentionPurge` | Never create a store without a delete path (ADR-11). |
+| **Budgets on every dimension** | `agent/budget.py` | Cost per useful diagnosis decides Gate 6. Exhaustion yields a reported partial result, never an unbounded loop. |
+
+### The gateway invariant
+
+There is exactly one way to invoke a tool, and it requires a `PolicyDecision`
+with `effect=PERMIT` whose binding hash matches this exact
+`(subject, tool, resource, investigation)` tuple and which has not expired.
+
+No bypass path, no admin flag, no test hook - the tests exercise the same entry
+point as production. `tests/test_gateway_invariant.py` exists to make breaking
+this expensive.
+
+Read-only is defended in four independent layers, so no single failure produces
+a write:
+
+1. no write-capable credential is issued to the runtime;
+2. `ToolContract.__post_init__` refuses to construct a non-READ tool at all;
+3. the registry therefore contains only READ tools;
+4. the policy engine denies non-READ risk classes unconditionally, not overridable by role.
+
+---
+
+## Layout
+
+```
+src/nexus/
+  api/            routes, schemas, closed error taxonomy, identity dependency
+  agent/          model adapter, budgets, tool-calling loop, orchestrator
+  domain/         enums, Subject, ResourceRef, the Evidence envelope
+  db/             ORM models, tenant-scoped repositories, retention purge
+  governance/     policy decision point, audit sink
+  tools/          tool contract, registry, governed gateway, mock connector
+  observability/  structured logging with secret scrubbing
+tests/            35 tests; governance and isolation run as their own CI step
+```
+
+**The portability seam.** Connectors return `Evidence`, never provider-native
+objects. No module above `tools/` may reference a provider-specific field name
+(ADR-04) - this is what makes the platform-independence claim real rather than
+aspirational, and Phase 2 adds a lint rule and contract test to enforce it.
+
+---
+
+## Phase 1 exit criteria
+
+Gate 1 evidence. All are covered by `tests/test_api_investigations.py`.
+
+- [x] NEXUS receives an engineering question
+- [x] The service creates and maintains an investigation session
+- [x] A mock tool is selected and invoked through the complete agent loop
+- [x] Every request carries an audit and trace identifier
+- [x] Failed model or tool calls produce controlled errors
+- [x] Unit and integration tests pass
+- [x] Basic latency, usage, and cost metrics are visible
+- [ ] The service deploys repeatedly through CI/CD *(workflow written; needs a target environment)*
+
+---
+
+## Known gaps, in priority order
+
+These are honest omissions, not oversights. Each maps to a backlog item.
+
+| Gap | Item | Note |
+|---|---|---|
+| **Alembic migrations** | NX-030 | Schema is created via `create_all`. Needed before any environment holds data worth keeping - do this first. |
+| Real model provider | NX-008 | Only the deterministic `echo` adapter exists; token and cost metrics read zero until a real provider is wired. Blocked on D-06 (Gate 1). |
+| Persistent audit sink | NX-022 | `AuditRow` and `AuditRepository` exist; the app currently wires the in-memory sink. Swap before any real connector. |
+| Trace step persistence | NX-032 | `TraceStep` table exists; the loop logs but does not yet write rows. |
+| Redis | NX-023 | Configured, not yet used. Session and cache land with Phase 2. |
+| SSE progress stream | NX-004 | Polling works; the event stream is Phase 1 P1. |
+| Enterprise identity | NX-106 | Dev headers today. The *claims contract* is final, so Phase 4 swaps the issuer only. |
+| Timezone on read-back | - | SQLite drops tzinfo on `created_at`. Postgres does not; cosmetic locally. |
+
+---
+
+## Conventions
+
+- Code comments cite the backlog item or ADR that justifies a non-obvious
+  constraint. If you change something carrying such a citation, the design
+  document changes too.
+- Errors come from the closed taxonomy in `api/errors.py`. Never a free-text
+  code - failure metrics are dimensioned on it.
+- Deterministic work (resolution, diffing, comparison) is code, not prompts
+  (ADR-05). The model classifies and explains; it does not compute or look up.
+- Untrusted content (logs, runbooks, tickets) passes through
+  `agent.model.quarantine()` before entering a prompt (ADR-09).
