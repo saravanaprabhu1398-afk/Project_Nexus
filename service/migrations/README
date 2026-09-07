@@ -28,10 +28,24 @@ environment holding real data needs a backup taken first.
 
 ## The audit table grant (NX-022)
 
-`audit_record` is append-only. On PostgreSQL, revision 0001 withdraws the
-UPDATE and DELETE privileges from the application role, so the guarantee is
+`audit_record` is append-only. On PostgreSQL, revision 0001 grants the
+application role SELECT and INSERT on it and nothing else, so the guarantee is
 enforced by the database rather than by convention in the repository layer.
-The role name comes from `NEXUS_DB_APP_ROLE` (default `nexus`).
+The role name comes from `NEXUS_DB_APP_ROLE` (default `nexus_app`).
+
+**Two roles are required.** A REVOKE on its own is not a control: PostgreSQL
+lets a superuser, and the owner of a table, bypass the ACL completely. Such a
+role still updates and deletes audit rows while `pg_class.relacl` shows the
+privilege withdrawn - which reads as a working control and is not one. Revision
+0001 therefore checks the role and refuses to run if it is a superuser or owns
+the tables.
+
+    nexus      owns the schema and runs migrations
+    nexus_app  what the service connects as; no superuser, owns nothing
+
+`deploy/postgres-init/01-app-role.sql` creates `nexus_app` for local
+development. Deployed environments create both roles alongside the database and
+take their secrets from the secret manager.
 
 SQLite has no privilege system, so the revision skips this step and the
 guarantee rests on `AuditRepository` exposing no mutating method. That is

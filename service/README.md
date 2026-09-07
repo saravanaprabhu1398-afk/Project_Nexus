@@ -20,6 +20,13 @@ uv run pytest -q
 make run              # migrates, then serves on :8000
 ```
 
+Or the full stack on PostgreSQL and Redis, with migrations run as a separate
+one-shot step before the API starts:
+
+```bash
+make up
+```
+
 Drive one investigation end to end against the mock connector:
 
 ```bash
@@ -72,10 +79,31 @@ Two guards make the chain worth trusting, both in `tests/test_migrations.py`:
 Tests build their schema by running the real migrations, not
 `metadata.create_all`, so the migration is the single source of truth.
 
-On PostgreSQL, revision 0001 also makes `audit_record` append-only for the
-application role (NX-022), so that guarantee is enforced by the database rather
-than by convention in the repository layer. SQLite has no privilege system and
-skips this - which is why Gate 2 evidence has to come from PostgreSQL.
+### Append-only audit needs two database roles (NX-022)
+
+On PostgreSQL, revision 0001 grants the application role SELECT and INSERT on
+`audit_record` and nothing else, so the guarantee is enforced by the database
+rather than by convention in the repository layer.
+
+**A REVOKE on its own is not a control.** PostgreSQL lets a superuser, and the
+owner of a table, bypass the ACL completely: such a role updates and deletes
+audit rows while `pg_class.relacl` shows the privilege withdrawn. That reads as
+a working control and is not one. Two roles are therefore required:
+
+    nexus      owns the schema and runs migrations
+    nexus_app  what the service connects as; no superuser, owns nothing
+
+Revision 0001 refuses to run if `NEXUS_DB_APP_ROLE` is a superuser or owns the
+tables, rather than applying a control that would do nothing.
+`deploy/postgres-init/01-app-role.sql` creates the role for local development.
+
+`scripts/check_audit_append_only.py` verifies the guarantee against a live
+database - it checks the role's standing, checks the privilege bits, and then
+proves the point by attempting an update and a delete. It runs in CI, and
+against the superuser configuration it fails with six distinct reasons.
+
+SQLite has no privilege system, so this cannot be evidenced there. Gate 2
+evidence has to come from PostgreSQL.
 
 ### The gateway invariant
 
@@ -146,8 +174,7 @@ These are honest omissions, not oversights. Each maps to a backlog item.
 | Redis | NX-023 | Configured, not yet used. Session and cache land with Phase 2. |
 | SSE progress stream | NX-004 | Polling works; the event stream is Phase 1 P1. |
 | Enterprise identity | NX-106 | Dev headers today. The *claims contract* is final, so Phase 4 swaps the issuer only. |
-| Timezone on read-back | - | SQLite drops tzinfo on `created_at`. PostgreSQL renders these columns `TIMESTAMP WITH TIME ZONE`, so this is local-only. |
-| PostgreSQL verified only by rendered SQL | NX-030 | The append-only grant and the PostgreSQL DDL were checked with `alembic upgrade head --sql`. A live PostgreSQL round trip runs in CI (`migrations-postgres`); it has not been executed on a developer machine yet. |
+| Timezone on read-back | - | SQLite drops tzinfo on `created_at`. Verified on PostgreSQL: these columns are `TIMESTAMP WITH TIME ZONE` and round-trip as `+00`, so this is local-only. |
 
 ---
 

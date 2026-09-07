@@ -6,6 +6,8 @@ services:
       POSTGRES_PASSWORD: nexus
       POSTGRES_DB: nexus
     ports: ["5432:5432"]
+    volumes:
+      - ./deploy/postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U nexus"]
       interval: 5s
@@ -26,8 +28,9 @@ services:
     depends_on:
       postgres: {condition: service_healthy}
     environment:
+      # Migrations run as the owner; the service does not.
       NEXUS_DATABASE_URL: postgresql+asyncpg://nexus:nexus@postgres:5432/nexus
-      NEXUS_DB_APP_ROLE: nexus
+      NEXUS_DB_APP_ROLE: nexus_app
     command: ["alembic", "upgrade", "head"]
     restart: "no"
 
@@ -39,7 +42,9 @@ services:
       migrate: {condition: service_completed_successfully}
     environment:
       NEXUS_ENV: dev
-      NEXUS_DATABASE_URL: postgresql+asyncpg://nexus:nexus@postgres:5432/nexus
+      # The service connects as nexus_app: not a superuser, owns nothing, and
+      # holds no UPDATE or DELETE on audit_record (NX-022).
+      NEXUS_DATABASE_URL: postgresql+asyncpg://nexus_app:nexus_app@postgres:5432/nexus
       NEXUS_REDIS_URL: redis://redis:6379/0
       NEXUS_MODEL_PROVIDER: echo
     ports: ["8000:8000"]

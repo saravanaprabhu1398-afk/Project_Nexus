@@ -57,40 +57,43 @@ jobs:
         options: >-
           --health-cmd pg_isready --health-interval 5s --health-retries 10
     env:
+      # Migrations run as the owner; the service role is separate and is not a
+      # superuser, because a superuser or owner bypasses the ACL entirely.
       NEXUS_DATABASE_URL: postgresql+asyncpg://nexus:nexus@localhost:5432/nexus
-      NEXUS_DB_APP_ROLE: nexus
+      NEXUS_DB_APP_ROLE: nexus_app
+      APP_DATABASE_URL: postgresql+asyncpg://nexus_app:nexus_app@localhost:5432/nexus
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
         with: {enable-cache: true}
       - run: uv sync --python 3.12
         working-directory: service
+
+      - name: Create the least-privilege application role
+        run: psql "postgresql://nexus:nexus@localhost:5432/nexus" -f deploy/postgres-init/01-app-role.sql
+        working-directory: service
+
       - name: Upgrade to head
         run: uv run alembic upgrade head
         working-directory: service
+
       - name: Round trip to base and back
         run: uv run alembic downgrade base && uv run alembic upgrade head
         working-directory: service
-      - name: Confirm audit_record is append-only for the app role
+
+      # The control this asserts is only meaningful for a non-superuser,
+      # non-owner role - so the check verifies that too, rather than trusting it.
+      - name: Confirm audit_record is append-only for the application role
+        run: uv run python scripts/check_audit_append_only.py
+        working-directory: service
+
+      - name: Reject a superuser application role
         run: |
-          uv run python - <<'PY'
-          import asyncio, os
-          from sqlalchemy import text
-          from sqlalchemy.ext.asyncio import create_async_engine
-
-          async def main() -> None:
-              engine = create_async_engine(os.environ["NEXUS_DATABASE_URL"])
-              async with engine.connect() as conn:
-                  for privilege in ("UPDATE", "DELETE"):
-                      granted = (await conn.execute(text(
-                          "select has_table_privilege(:role, 'audit_record', :p)"
-                      ), {"role": os.environ["NEXUS_DB_APP_ROLE"], "p": privilege})).scalar()
-                      assert granted is False, f"{privilege} is still granted on audit_record"
-              await engine.dispose()
-              print("audit_record is append-only for the application role")
-
-          asyncio.run(main())
-          PY
+          uv run alembic downgrade base
+          if NEXUS_DB_APP_ROLE=nexus uv run alembic upgrade head 2>/dev/null; then
+            echo "migration accepted a superuser application role" && exit 1
+          fi
+          echo "migration correctly refused a superuser application role"
         working-directory: service
 
   build:

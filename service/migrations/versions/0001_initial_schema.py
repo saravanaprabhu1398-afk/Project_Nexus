@@ -182,26 +182,72 @@ def downgrade() -> None:
 
 
 def _set_audit_append_only(*, enabled: bool) -> None:
-    """Make audit_record append-only for the application role (NX-022).
+    """Give the application role least privilege, and make audit_record
+    append-only for it (NX-022).
 
-    The repository layer already exposes no mutating method, but convention is
-    not a control. On PostgreSQL the privilege is withdrawn so the guarantee
-    holds even if someone later adds one.
+    A REVOKE alone is not enough. PostgreSQL lets a superuser, and the owner of
+    a table, bypass the ACL entirely - so a role that is either will still be
+    able to update and delete audit rows while pg_class.relacl shows the
+    privilege withdrawn. That is worse than no control, because it reads as one.
+    This function therefore refuses to run against such a role.
 
-    SQLite has no privilege system; local development relies on the repository
-    layer alone, which is why Gate 2 evidence has to come from PostgreSQL.
+    The application role is expected to exist already; deployed environments
+    create it alongside the database, and local development creates it in
+    deploy/postgres-init. SQLite has no privilege system and is skipped.
     """
     # get_context().dialect is correct in both online and offline modes;
-    # get_bind() is not populated when rendering static SQL, which silently
-    # skipped this step.
+    # get_bind() is not populated when rendering static SQL.
     if op.get_context().dialect.name != "postgresql":
         return
 
-    role = os.environ.get("NEXUS_DB_APP_ROLE", "nexus")
+    role = os.environ.get("NEXUS_DB_APP_ROLE", "nexus_app")
     if not role.replace("_", "").isalnum():
         raise ValueError(f"NEXUS_DB_APP_ROLE {role!r} is not a plain identifier")
 
+    if op.get_context().as_sql:
+        # Static SQL rendering has no connection to interrogate, so emit the
+        # statements and leave the superuser check to the live run.
+        _emit_grants(role, enabled=enabled)
+        return
+
+    bind = op.get_bind()
+    exists, is_super = bind.execute(
+        sa.text("select true, rolsuper from pg_roles where rolname = :r"),
+        {"r": role},
+    ).first() or (False, False)
+    if not exists:
+        raise RuntimeError(
+            f"application role {role!r} does not exist. Create it before "
+            "migrating; see deploy/postgres-init/01-app-role.sql."
+        )
+    if is_super:
+        raise RuntimeError(
+            f"application role {role!r} is a superuser, which bypasses table "
+            "ACLs. The append-only guarantee on audit_record would be vacuous. "
+            "Point NEXUS_DB_APP_ROLE at a non-superuser role that does not own "
+            "these tables."
+        )
+    owners = (
+        bind.execute(sa.text("select tableowner from pg_tables where tablename = 'audit_record'"))
+        .scalars()
+        .all()
+    )
+    if role in owners:
+        raise RuntimeError(
+            f"application role {role!r} owns audit_record; an owner bypasses "
+            "the ACL. Migrations should run as a separate owner role."
+        )
+
+    _emit_grants(role, enabled=enabled)
+
+
+def _emit_grants(role: str, *, enabled: bool) -> None:
+    data_tables = "investigation, evidence, trace_step"
     if enabled:
+        op.execute(f'GRANT SELECT, INSERT, UPDATE, DELETE ON {data_tables} TO "{role}"')
+        op.execute(f'GRANT SELECT, INSERT ON audit_record TO "{role}"')
+        # Belt and braces: explicit even though the GRANT above omits them.
         op.execute(f'REVOKE UPDATE, DELETE ON audit_record FROM "{role}"')
     else:
-        op.execute(f'GRANT UPDATE, DELETE ON audit_record TO "{role}"')
+        op.execute(f'REVOKE ALL ON {data_tables} FROM "{role}"')
+        op.execute(f'REVOKE ALL ON audit_record FROM "{role}"')
