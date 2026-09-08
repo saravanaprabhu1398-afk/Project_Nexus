@@ -10,6 +10,11 @@ there and in [`../Phase_0_Package/10_Product_Backlog.md`](../Phase_0_Package/10_
 
 ---
 
+**To check this yourself rather than take my word for it:**
+[`../docs/VALIDATION.md`](../docs/VALIDATION.md) gives per-phase steps, most of
+them using `psql`, `sqlite3` and `curl` directly rather than the service's own
+API, and most including a negative check.
+
 ## Quick start
 
 ```bash
