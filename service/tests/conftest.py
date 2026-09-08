@@ -10,6 +10,7 @@ from alembic import command
 from alembic.config import Config
 from httpx import ASGITransport, AsyncClient
 
+from nexus.agent.budget import Budget, BudgetTracker
 from nexus.config import Settings
 from nexus.db.session import dispose_engine, get_session, init_engine
 from nexus.domain.models import ResourceRef, Subject
@@ -60,6 +61,25 @@ def settings(tmp_path) -> Settings:
         database_url=f"sqlite+aiosqlite:///{tmp_path / 'test.db'}",
         model_provider="echo",
     )
+
+
+BUDGET_DEFAULTS: dict[str, int] = {
+    "wall_clock_ms": 300_000,
+    "tool_calls": 25,
+    "plan_steps": 15,
+    "replans": 2,
+    "tokens_in": 150_000,
+    "tokens_out": 20_000,
+}
+
+
+def make_budget(**overrides: int) -> Budget:
+    """Generous defaults; override one dimension to test its ceiling."""
+    return Budget(**{**BUDGET_DEFAULTS, **overrides})
+
+
+def make_tracker(**overrides: int) -> BudgetTracker:
+    return BudgetTracker(make_budget(**overrides))
 
 
 @pytest.fixture

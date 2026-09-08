@@ -54,7 +54,6 @@ class LoopResult:
     evidence: list[Evidence] = field(default_factory=list)
     missing: list[MissingEvidence] = field(default_factory=list)
     stop_reason: StopReason = StopReason.PLAN_COMPLETE
-    steps_run: int = 0
 
 
 class InvestigationLoop:
@@ -127,7 +126,6 @@ class InvestigationLoop:
             outcomes = [
                 StepOutcome.UNAVAILABLE if isinstance(o, BaseException) else o for o in outcomes
             ]
-            result.steps_run += len(wave)
 
             attempted.update(s.id for s in wave)
 

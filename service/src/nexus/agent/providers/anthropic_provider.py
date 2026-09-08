@@ -47,9 +47,6 @@ class AnthropicModelAdapter(ModelAdapter):
         }
         self._max_tokens = max_tokens
 
-    def model_for(self, tier: ModelTier) -> str:
-        return self._models[tier]
-
     async def complete(
         self, messages: list[ModelMessage], *, tier: ModelTier = ModelTier.FRONTIER
     ) -> ModelResponse:

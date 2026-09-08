@@ -1,4 +1,4 @@
-.PHONY: install test lint typecheck run up down check migrate migrate-down revision current history
+.PHONY: install test lint typecheck run up down check migrate migrate-down revision current history deadcode deadcode-baseline
 
 install:
 	uv sync
@@ -39,4 +39,12 @@ up:
 down:
 	docker compose down -v
 
-check: lint typecheck test
+deadcode:
+	uv run vulture src/ scripts/ migrations/ vulture_whitelist.py --min-confidence 60
+
+# Re-baseline after adding routes or migrations, then read the diff before
+# committing it - a genuine dead symbol can hide in a regenerated whitelist.
+deadcode-baseline:
+	uv run vulture src/ scripts/ migrations/ --min-confidence 60 --make-whitelist > vulture_whitelist.py
+
+check: lint typecheck test deadcode

@@ -2,24 +2,11 @@
 
 from __future__ import annotations
 
-from nexus.agent.budget import Budget, BudgetTracker
 from nexus.agent.loop import InvestigationLoop, PlanStep, StopReason
 from nexus.agent.model import quarantine
 from nexus.domain.models import ResourceRef
 from nexus.tools.contract import ToolCall
-
-
-def _tracker(**overrides) -> BudgetTracker:
-    base = dict(
-        wall_clock_ms=300_000,
-        tool_calls=25,
-        plan_steps=15,
-        replans=2,
-        tokens_in=150_000,
-        tokens_out=20_000,
-    )
-    base.update(overrides)
-    return BudgetTracker(Budget(**base))
+from tests.conftest import make_tracker
 
 
 def _plan(resource: ResourceRef) -> list[PlanStep]:
@@ -46,7 +33,7 @@ def _plan(resource: ResourceRef) -> list[PlanStep]:
 
 
 async def test_full_loop_collects_cited_evidence(registry, gateway, pdp, subject, resource):
-    loop = InvestigationLoop(registry=registry, gateway=gateway, pdp=pdp, budget=_tracker())
+    loop = InvestigationLoop(registry=registry, gateway=gateway, pdp=pdp, budget=make_tracker())
     result = await loop.run(
         subject=subject,
         investigation_id="inv-1",
@@ -62,7 +49,7 @@ async def test_full_loop_collects_cited_evidence(registry, gateway, pdp, subject
 async def test_out_of_scope_resource_becomes_missing_evidence(registry, gateway, pdp, subject):
     """A policy denial is surfaced, never routed around (SDD 9.3)."""
     outside = ResourceRef(system="databricks", resource_id="other-ws/jobs/1")
-    loop = InvestigationLoop(registry=registry, gateway=gateway, pdp=pdp, budget=_tracker())
+    loop = InvestigationLoop(registry=registry, gateway=gateway, pdp=pdp, budget=make_tracker())
     result = await loop.run(
         subject=subject,
         investigation_id="inv-1",
@@ -78,7 +65,7 @@ async def test_out_of_scope_resource_becomes_missing_evidence(registry, gateway,
 async def test_unregistered_tool_becomes_missing_evidence(
     registry, gateway, pdp, subject, resource
 ):
-    loop = InvestigationLoop(registry=registry, gateway=gateway, pdp=pdp, budget=_tracker())
+    loop = InvestigationLoop(registry=registry, gateway=gateway, pdp=pdp, budget=make_tracker())
     result = await loop.run(
         subject=subject,
         investigation_id="inv-1",
@@ -91,7 +78,7 @@ async def test_unregistered_tool_becomes_missing_evidence(
 
 async def test_budget_exhaustion_returns_partial_result(registry, gateway, pdp, subject, resource):
     loop = InvestigationLoop(
-        registry=registry, gateway=gateway, pdp=pdp, budget=_tracker(tool_calls=1)
+        registry=registry, gateway=gateway, pdp=pdp, budget=make_tracker(tool_calls=1)
     )
     result = await loop.run(
         subject=subject,

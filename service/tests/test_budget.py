@@ -4,24 +4,12 @@ from __future__ import annotations
 
 import pytest
 
-from nexus.agent.budget import Budget, BudgetExceeded, BudgetTracker
-
-
-def _budget(**overrides) -> Budget:
-    base = dict(
-        wall_clock_ms=300_000,
-        tool_calls=3,
-        plan_steps=15,
-        replans=2,
-        tokens_in=1000,
-        tokens_out=1000,
-    )
-    base.update(overrides)
-    return Budget(**base)
+from nexus.agent.budget import BudgetExceeded, BudgetTracker
+from tests.conftest import make_budget
 
 
 def test_tool_call_ceiling_is_enforced():
-    t = BudgetTracker(_budget(tool_calls=2))
+    t = BudgetTracker(make_budget(tool_calls=2))
     t.check()
     t.record_tool_call()
     t.check()
@@ -32,7 +20,7 @@ def test_tool_call_ceiling_is_enforced():
 
 
 def test_token_ceiling_is_enforced():
-    t = BudgetTracker(_budget(tokens_in=100))
+    t = BudgetTracker(make_budget(tokens_in=100))
     t.record_tokens(150, 10)
     with pytest.raises(BudgetExceeded) as exc:
         t.check()
@@ -46,7 +34,7 @@ def test_replan_ceiling_matches_every_other_dimension():
     allowing one replan more than configured - and the old test encoded that
     off-by-one as the expected behaviour.
     """
-    t = BudgetTracker(_budget(replans=2))
+    t = BudgetTracker(make_budget(replans=2))
     t.check()  # 0 used - a replan is allowed
     t.record_replan()
     t.check()  # 1 used - one more is allowed
@@ -64,7 +52,7 @@ def test_every_dimension_stops_at_its_limit_not_one_past_it():
         ("replans", lambda t: t.record_replan()),
     ]
     for dimension, record in cases:
-        t = BudgetTracker(_budget(**{dimension: 1}))
+        t = BudgetTracker(make_budget(**{dimension: 1}))
         t.check()
         record(t)
         with pytest.raises(BudgetExceeded) as exc:
@@ -73,7 +61,7 @@ def test_every_dimension_stops_at_its_limit_not_one_past_it():
 
 
 def test_snapshot_reports_every_dimension():
-    t = BudgetTracker(_budget())
+    t = BudgetTracker(make_budget())
     t.record_tool_call()
     t.record_step()
     t.record_tokens(10, 5)

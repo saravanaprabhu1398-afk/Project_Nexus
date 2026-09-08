@@ -26,6 +26,11 @@ jobs:
         run: uv run mypy
         working-directory: service
 
+      # Whitelisted, so a finding here is a real one rather than noise.
+      - name: Dead code
+        run: uv run vulture src/ scripts/ migrations/ vulture_whitelist.py --min-confidence 60
+        working-directory: service
+
       # Governance invariants run on every commit, not only in the Phase 4
       # security suite. By Phase 4 the data model is already fixed.
       - name: Governance and isolation invariants

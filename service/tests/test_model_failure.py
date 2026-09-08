@@ -10,12 +10,12 @@ from __future__ import annotations
 
 import pytest
 
-from nexus.agent.budget import Budget, BudgetTracker
 from nexus.agent.metering import MeteredModelAdapter
 from nexus.agent.model import ModelAdapter, ModelMessage, ModelResponse, ModelTier
 from nexus.api.errors import ErrorCode, NexusError
 from nexus.config import Settings
 from nexus.domain.models import InvestigationStatus
+from tests.conftest import make_tracker
 
 
 class UnavailableModel(ModelAdapter):
@@ -42,19 +42,6 @@ class GarbageModel(ModelAdapter):
 
     async def embed(self, texts):
         return []
-
-
-def _tracker(**overrides) -> BudgetTracker:
-    base = dict(
-        wall_clock_ms=300_000,
-        tool_calls=25,
-        plan_steps=15,
-        replans=2,
-        tokens_in=150_000,
-        tokens_out=20_000,
-    )
-    base.update(overrides)
-    return BudgetTracker(Budget(**base))
 
 
 async def _run(settings: Settings, model, registry, gateway, pdp, subject, resource):
@@ -106,7 +93,7 @@ async def test_invalid_output_is_not_retryable():
 
 async def test_a_failing_model_is_not_metered_as_usage():
     """A call that never returned did not consume output tokens."""
-    budget = _tracker()
+    budget = make_tracker()
     metered = MeteredModelAdapter(UnavailableModel(), budget, investigation_id="inv-1")
     with pytest.raises(NexusError):
         await metered.complete([ModelMessage(role="user", content="x")])
