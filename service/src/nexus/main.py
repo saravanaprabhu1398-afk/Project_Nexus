@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -19,6 +20,7 @@ from nexus.governance.audit import DatabaseAuditSink
 from nexus.governance.pdp import StaticAllowlistPDP
 from nexus.observability.logging import configure_logging, get_logger
 from nexus.observability.trace import DatabaseTraceSink
+from nexus.tools.contract import ToolContract
 from nexus.tools.gateway import ToolGateway
 from nexus.tools.mock.databricks_mock import MOCK_TOOLS
 from nexus.tools.registry import ToolRegistry
@@ -27,6 +29,32 @@ log = get_logger(__name__)
 
 PROMPT_VERSION = "p1-bootstrap-1"
 POLICY_VERSION = "static-v1"
+
+
+def _tools_for(settings: Settings) -> tuple[ToolContract, ...]:
+    """Real connector when it is configured, the stub otherwise.
+
+    A missing credential falls back rather than failing startup: the rest of the
+    system is still worth running, and an operator gets a warning instead of a
+    crash loop.
+    """
+    if settings.connector != "databricks":
+        return MOCK_TOOLS
+
+    host = os.environ.get("DATABRICKS_HOST", "")
+    token = os.environ.get("DATABRICKS_TOKEN", "")
+    if not host or not token:
+        log.warning(
+            "databricks_credentials_missing",
+            detail="falling back to mock tools; set DATABRICKS_HOST and DATABRICKS_TOKEN",
+        )
+        return MOCK_TOOLS
+
+    from nexus.tools.databricks.client import DatabricksClient
+    from nexus.tools.databricks.tools import build_tools
+
+    log.info("connector_selected", connector="databricks")
+    return build_tools(DatabricksClient(host, token))
 
 
 def build_app(settings: Settings | None = None) -> FastAPI:
@@ -55,7 +83,7 @@ def build_app(settings: Settings | None = None) -> FastAPI:
     )
 
     registry = ToolRegistry()
-    for contract in MOCK_TOOLS:
+    for contract in _tools_for(settings):
         registry.register(contract)
 
     # Durable, append-only. On PostgreSQL the application role cannot alter or
@@ -65,7 +93,9 @@ def build_app(settings: Settings | None = None) -> FastAPI:
     pdp = StaticAllowlistPDP(
         allowed_tools=registry.names(),
         # Phase 0 doc 02 section 4 supplies the real pilot scope prefixes.
-        resource_prefixes=frozenset({"databricks:ws/jobs/"}),
+        # Doc 02 §4 supplies the real pilot scope. Until it is filled in, the
+        # prefix admits the configured workspace only.
+        resource_prefixes=frozenset({settings.databricks_resource_prefix}),
         policy_version=POLICY_VERSION,
     )
     gateway = ToolGateway(registry, audit)

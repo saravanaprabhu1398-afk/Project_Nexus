@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     model_max_tokens: int = 16_000
     model_timeout_s: float = 120.0
 
+    # Connector. "mock" uses the built-in stub; "databricks" needs
+    # DATABRICKS_HOST and DATABRICKS_TOKEN in the environment.
+    connector: str = "mock"
+    databricks_resource_prefix: str = "databricks:"
+
     # Budgets - SDD 9.6
     budget_wall_clock_ms: int = 300_000
     budget_tool_calls: int = 25
