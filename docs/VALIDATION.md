@@ -20,16 +20,34 @@ you saw something else.
 
 ---
 
-## Prerequisites
+## How to run this
+
+**Every block below is copy-pasteable as a whole.** No placeholder needs
+substituting; ids are captured into shell variables. Run the sections in order
+within a phase - later checks depend on data earlier ones create.
 
 ```bash
 cd service
 uv sync --python 3.12
 ```
 
-Anything below marked **[PG]** needs the PostgreSQL stack: `make up`, and
-`make down` when finished. Anything marked **[DBX]** needs your Databricks
-credentials exported.
+Sections are tagged with what they need:
+
+| Tag | Needs | If you skip it |
+|---|---|---|
+| *(untagged)* | nothing | - |
+| **[SRV]** | the service running (started in §1.1) | curl calls fail to connect |
+| **[PG]** | Docker running, then `make up` | psql commands error |
+| **[DBX]** | `DATABRICKS_HOST` / `DATABRICKS_TOKEN` exported | scripts exit 2 |
+
+Preflight - confirm what you can actually run:
+
+```bash
+uv run python -c "print('python ok')"
+command -v sqlite3 >/dev/null && echo "sqlite3 ok" || echo "sqlite3 MISSING - brew install sqlite"
+docker info >/dev/null 2>&1 && echo "docker ok - [PG] sections will work" || echo "docker down - skip [PG] sections"
+[ -n "$DATABRICKS_TOKEN" ] && echo "databricks ok" || echo "no DATABRICKS_TOKEN - skip [DBX] sections"
+```
 
 ---
 
@@ -97,30 +115,47 @@ checks had passed over. All verified against the code before fixing:
 
 ### 1.1 The service runs and produces cited evidence
 
+Start from a clean database, and run the service in the background so the rest
+of this section works in the same terminal:
+
 ```bash
 rm -f nexus.db && make migrate
-make run          # leave running; use a second terminal below
+uv run uvicorn nexus.main:app --port 8000 > /tmp/nexus.log 2>&1 &
+until curl -sf http://127.0.0.1:8000/healthz >/dev/null; do sleep 0.5; done
+echo "service up"
+AUTH=(-H "X-Nexus-User: eng-1" -H "X-Nexus-Tenant: pilot-a")
 ```
+
+> Stop the service when you finish Phase 1: `pkill -f "uvicorn nexus.main"`.
+> The `AUTH=(...)` array form works in zsh and bash 4+; on older bash use
+> `AUTH='-H X-Nexus-User:eng-1 -H X-Nexus-Tenant:pilot-a'` and `$AUTH` unquoted.
+
+Ask a question and look at the raw response:
 
 ```bash
-curl -s -X POST http://127.0.0.1:8000/v1/investigations \
-  -H 'Content-Type: application/json' \
-  -H 'X-Nexus-User: eng-1' -H 'X-Nexus-Tenant: pilot-a' \
-  -d '{"question":"Why did it fail?","resource_refs":[{"type":"databricks_job","id":"1234","workspace":"ws"}]}'
+curl -si -X POST http://127.0.0.1:8000/v1/investigations \
+  -H 'Content-Type: application/json' "${AUTH[@]}" \
+  -d '{"question":"Why did it fail?","resource_refs":[{"type":"databricks_job","id":"1234","workspace":"ws"}]}' \
+  | head -12
 ```
 
-**Expect:** HTTP `202`, a `Location` header, and `"status":"queued"` — returned
-immediately, not after the investigation finishes.
+**Expect:** `HTTP/1.1 202 Accepted`, a `location:` header, and
+`"status":"queued"` - returned immediately, not after the investigation
+finishes.
 
 **Why:** the acknowledgement and the diagnosis have different deadlines (2s and
 5min). A synchronous API cannot meet both; this proves the design is actually
 asynchronous rather than merely documented as such.
 
-Then, with the id from above:
+Now capture an id and read the finished result:
 
 ```bash
-curl -s "http://127.0.0.1:8000/v1/investigations/<ID>" \
-  -H 'X-Nexus-User: eng-1' -H 'X-Nexus-Tenant: pilot-a' | python3 -m json.tool
+ID=$(curl -s -X POST http://127.0.0.1:8000/v1/investigations \
+  -H 'Content-Type: application/json' "${AUTH[@]}" \
+  -d '{"question":"Why did customer_daily_ingestion fail?","resource_refs":[{"type":"databricks_job","id":"1234","workspace":"ws"}]}' \
+  | python3 -c 'import sys,json;print(json.load(sys.stdin)["id"])')
+sleep 2
+curl -s "http://127.0.0.1:8000/v1/investigations/$ID" "${AUTH[@]}" | python3 -m json.tool
 ```
 
 **Expect:** `status: complete`, `stop_reason: plan_complete`, three evidence
@@ -141,11 +176,10 @@ disagree, one of them is fabricating.
 
 ### 1.3 Tenant isolation — negative check
 
-Create an investigation as `pilot-a` (above), then read it as a different
-tenant:
+Uses `$ID` from §1.1 - run that first.
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" "http://127.0.0.1:8000/v1/investigations/<ID>" \
+curl -s -o /dev/null -w "%{http_code}\n" "http://127.0.0.1:8000/v1/investigations/$ID" \
   -H 'X-Nexus-User: eng-1' -H 'X-Nexus-Tenant: pilot-b'
 ```
 
@@ -205,16 +239,25 @@ Read `src/nexus/tools/gateway.py` and satisfy yourself there is exactly one
 
 ### 1.6 Audit survives a restart
 
-Run an investigation, then — without using the API:
+Depends on §1.1. Read the trail without going through the API at all:
 
 ```bash
 sqlite3 nexus.db "select action, decision, result_status from audit_record;"
 ```
 
-**Expect:** one row per tool call, `decision = permit`.
+**Expect:** one row per tool call, `decision = permit`. Empty output means §1.1
+did not run - the database is fresh.
 
-Now restart the service (`Ctrl-C`, `make run`) and read the trail again through
-the API. **Expect:** the same rows.
+Now restart the service and read the same trail back through the API:
+
+```bash
+pkill -f "uvicorn nexus.main"; sleep 1
+uv run uvicorn nexus.main:app --port 8000 > /tmp/nexus.log 2>&1 &
+until curl -sf http://127.0.0.1:8000/healthz >/dev/null; do sleep 0.5; done
+curl -s "http://127.0.0.1:8000/v1/investigations/$ID/audit" "${AUTH[@]}" | python3 -m json.tool | head -20
+```
+
+**Expect:** the same rows the database showed.
 
 **Why:** this lived in process memory until it was fixed. The restart is the
 whole test.
@@ -272,11 +315,15 @@ and then blocked its own recovery advice.
 ### 2.1 Migrations actually commit — the check that matters most
 
 ```bash
-D=$(mktemp -u /tmp/val-XXXXXX.db)
+D=$(mktemp -d)/check.db
 NEXUS_DATABASE_URL="sqlite+aiosqlite:///$D" uv run alembic upgrade head
 sqlite3 "$D" "select version_num from alembic_version;"
 sqlite3 "$D" "pragma table_info(investigation);" | grep outcome
 ```
+
+> `mktemp -d` gives a fresh directory every time. `mktemp -u` only invents a
+> name and fails if one is left over from a previous run - and an empty `$D`
+> then makes every command below it quietly do nothing.
 
 **Expect:** `0002`, and an `outcome` column.
 
@@ -295,10 +342,15 @@ fails and names your column. Then remove it.
 
 ### 2.3 A legacy database explains itself
 
+Builds its own database, so it does not depend on earlier sections. Note it
+stops at **0001** - the schema has to genuinely match the revision you are about
+to stamp, or the recovery is wrong:
+
 ```bash
-cp nexus.db /tmp/legacy.db
-sqlite3 /tmp/legacy.db "delete from alembic_version;"
-NEXUS_DATABASE_URL="sqlite+aiosqlite:////tmp/legacy.db" uv run alembic upgrade head
+LEG=$(mktemp -d)/legacy.db
+NEXUS_DATABASE_URL="sqlite+aiosqlite:///$LEG" uv run alembic upgrade 0001 >/dev/null 2>&1
+sqlite3 "$LEG" "delete from alembic_version;"
+NEXUS_DATABASE_URL="sqlite+aiosqlite:///$LEG" uv run alembic upgrade head 2>&1 | tail -12
 ```
 
 **Expect:** a readable message saying the database predates the chain, not a
@@ -307,12 +359,18 @@ hundred-line traceback.
 Then confirm the recovery it recommends actually works:
 
 ```bash
-NEXUS_DATABASE_URL="sqlite+aiosqlite:////tmp/legacy.db" uv run alembic stamp 0001
-NEXUS_DATABASE_URL="sqlite+aiosqlite:////tmp/legacy.db" uv run alembic upgrade head
-sqlite3 /tmp/legacy.db "select count(*) from investigation;"
+NEXUS_DATABASE_URL="sqlite+aiosqlite:///$LEG" uv run alembic stamp 0001
+NEXUS_DATABASE_URL="sqlite+aiosqlite:///$LEG" uv run alembic upgrade head
+sqlite3 "$LEG" "select version_num from alembic_version;"
 ```
 
-**Expect:** stamp succeeds, 0002 applies, rows are preserved.
+**Expect:** stamp succeeds, 0002 applies, and the version reads `0002`.
+
+**Negative check - stamp the wrong revision on purpose.** Build the database at
+`head` instead of `0001`, strip the version, then stamp `0001`. The upgrade
+fails with `duplicate column name: outcome`, because the schema was already at
+0002. That is exactly what the warning above is about, and it is worth seeing
+once: a wrong stamp does not announce itself until the next migration runs.
 
 **Why:** the guard once blocked `stamp` — the error told you to run a command
 the error prevented.
@@ -320,12 +378,12 @@ the error prevented.
 ### 2.4 Rollback is real
 
 ```bash
-D=$(mktemp -u /tmp/val2-XXXXXX.db)
-NEXUS_DATABASE_URL="sqlite+aiosqlite:///$D" uv run alembic upgrade head
-NEXUS_DATABASE_URL="sqlite+aiosqlite:///$D" uv run alembic downgrade base
-sqlite3 "$D" ".tables"
-NEXUS_DATABASE_URL="sqlite+aiosqlite:///$D" uv run alembic upgrade head
-sqlite3 "$D" ".tables"
+R=$(mktemp -d)/roundtrip.db
+NEXUS_DATABASE_URL="sqlite+aiosqlite:///$R" uv run alembic upgrade head
+NEXUS_DATABASE_URL="sqlite+aiosqlite:///$R" uv run alembic downgrade base
+sqlite3 "$R" ".tables"
+NEXUS_DATABASE_URL="sqlite+aiosqlite:///$R" uv run alembic upgrade head
+sqlite3 "$R" ".tables"
 ```
 
 **Expect:** tables gone after downgrade, back after upgrade.
@@ -455,8 +513,12 @@ Green here means "no known regression", never "it works".
 
 ```bash
 gh run list --limit 3
-gh run view --log | grep -E "append-only for|correctly refused a superuser"
+RUN=$(gh run list --limit 1 --json databaseId -q '.[0].databaseId')
+gh run view "$RUN" --log | grep -E "append-only for|correctly refused a superuser"
 ```
+
+> `gh run view --log` without a run id fails with "run or job ID required when
+> not running interactively" - it does not default to the latest run.
 
 **Expect:** three jobs green, and both assertions present in the log — proving
 they executed rather than being skipped.
