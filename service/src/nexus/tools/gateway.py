@@ -20,14 +20,56 @@ import asyncio
 import time
 
 from nexus.api.errors import ErrorCode, NexusError
-from nexus.domain.models import StepOutcome, Subject
+from nexus.domain.models import Integrity, StepOutcome, Subject
 from nexus.governance.audit import AuditAction, AuditRecord, AuditSink, AuditWriteFailed
 from nexus.governance.pdp import PolicyDecision, binding_for
+from nexus.governance.redaction import redact_text
 from nexus.observability.logging import get_logger
-from nexus.tools.contract import ToolCall, ToolResult
+from nexus.tools.contract import ToolCall, ToolContract, ToolResult
 from nexus.tools.registry import ToolRegistry
 
 log = get_logger(__name__)
+
+
+def _apply_obligations(
+    result: ToolResult,
+    obligations: tuple[str, ...],
+    contract: ToolContract,
+    outcome: StepOutcome,
+) -> StepOutcome:
+    """Carry out the post-conditions the policy decision attached.
+
+    An obligation nothing honours is worse than no obligation: the decision log
+    records that redaction and truncation happened. So an unrecognised
+    obligation raises rather than being ignored.
+    """
+    for obligation in obligations:
+        if obligation == "redact:pii":
+            for evidence in result.evidence:
+                cleaned, applied = redact_text(evidence.content_summary)
+                evidence.content_summary = cleaned
+                evidence.redaction_applied.extend(applied)
+        elif obligation.startswith("truncate:"):
+            limit = contract.max_output_bytes
+            for evidence in result.evidence:
+                encoded = evidence.content_summary.encode("utf-8")
+                if len(encoded) > limit:
+                    evidence.content_summary = (
+                        encoded[:limit].decode("utf-8", errors="ignore") + "... [truncated]"
+                    )
+                    evidence.integrity = Integrity.TRUNCATED
+                    result.truncated = True
+                    outcome = StepOutcome.TRUNCATED
+        else:
+            raise NexusError(
+                ErrorCode.INTERNAL_ERROR,
+                f"policy attached an obligation this gateway cannot honour: {obligation!r}",
+                remediation=(
+                    "Implement the obligation or remove it from the policy. A "
+                    "declared-but-unenforced obligation is a control that does nothing."
+                ),
+            )
+    return outcome
 
 
 class ToolGateway:
@@ -91,6 +133,9 @@ class ToolGateway:
                 outcome = StepOutcome.EMPTY
             elif result.truncated:
                 outcome = StepOutcome.TRUNCATED
+
+        if result is not None and outcome is not StepOutcome.TIMEOUT:
+            outcome = _apply_obligations(result, decision.obligations, contract, outcome)
 
         elapsed_ms = int((time.monotonic() - started) * 1000)
 

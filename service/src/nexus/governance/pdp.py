@@ -72,12 +72,20 @@ def binding_for(request: PolicyRequest) -> str:
     decision whose binding does not match - so a PERMIT for one resource can
     never authorize a call to another.
     """
+    # The full resource, not just its URI. environment and sensitivity are the
+    # fields env_restriction and sensitivity_ceiling decide on, so leaving them
+    # out would let a PERMIT issued for a public, non-production resource
+    # authorize a call against a restricted production one at the same URI.
     raw = "|".join(
         [
             request.subject.user_id,
             request.subject.tenant_id,
             request.tool_name,
-            request.resource.uri,
+            str(request.risk_class),
+            request.resource.system,
+            request.resource.resource_id,
+            request.resource.environment,
+            str(request.resource.sensitivity),
             request.investigation_id,
         ]
     )

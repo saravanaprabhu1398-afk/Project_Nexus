@@ -4,12 +4,13 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from nexus.agent.orchestrator import Orchestrator
-from nexus.agent.providers.echo import EchoModelAdapter
+from nexus.agent.providers import build_model_adapter
 from nexus.api.errors import NexusError
 from nexus.api.routes import health, investigations
 from nexus.config import Settings, get_settings
@@ -76,16 +77,20 @@ def build_app(settings: Settings | None = None) -> FastAPI:
     app.state.pdp = pdp
     app.state.prompt_version = PROMPT_VERSION
     app.state.policy_version = POLICY_VERSION
-    app.state.missing_evidence = {}
-    app.state.observation_summary = {}
     app.state.orchestrator = Orchestrator(
         settings=settings,
         registry=registry,
         gateway=gateway,
         pdp=pdp,
-        model=EchoModelAdapter(),
+        model=build_model_adapter(settings),
         trace=trace,
     )
+
+    @app.get("/", include_in_schema=False)
+    async def index() -> FileResponse:
+        """The pilot interface. Served from the same origin as the API so the
+        browser needs no CORS grant and no separate build step exists."""
+        return FileResponse(Path(__file__).parent / "web" / "index.html")
 
     app.include_router(health.router)
     app.include_router(investigations.router)

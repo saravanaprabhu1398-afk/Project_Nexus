@@ -88,6 +88,7 @@ class InvestigationLoop:
         result = LoopResult()
         semaphore = asyncio.Semaphore(self._fanout)
         barren_rounds = 0
+        attempted: set[str] = set()
 
         for wave in _waves(plan):
             try:
@@ -101,9 +102,13 @@ class InvestigationLoop:
                         remediation="Raise the budget or narrow the question, then re-run.",
                     )
                 )
+                _report_unattempted(plan, attempted, result, result.stop_reason)
                 return result
 
             before = len(result.evidence)
+            # return_exceptions: one step raising must not cancel the caller's
+            # await and orphan its siblings, which keep running and mutating a
+            # result nobody is reading any more.
             outcomes = await asyncio.gather(
                 *(
                     self._run_step(
@@ -116,18 +121,26 @@ class InvestigationLoop:
                         result=result,
                     )
                     for step in wave
-                )
+                ),
+                return_exceptions=True,
             )
+            outcomes = [
+                StepOutcome.UNAVAILABLE if isinstance(o, BaseException) else o for o in outcomes
+            ]
             result.steps_run += len(wave)
+
+            attempted.update(s.id for s in wave)
 
             for step, outcome in zip(wave, outcomes, strict=True):
                 if outcome is not StepOutcome.OK and step.essential:
                     result.stop_reason = StopReason.ESSENTIAL_STEP_DENIED
+                    _report_unattempted(plan, attempted, result, result.stop_reason)
                     return result
 
             barren_rounds = barren_rounds + 1 if len(result.evidence) == before else 0
             if barren_rounds >= 2:
                 result.stop_reason = StopReason.NO_NEW_EVIDENCE
+                _report_unattempted(plan, attempted, result, result.stop_reason)
                 return result
 
         result.stop_reason = StopReason.PLAN_COMPLETE
@@ -145,6 +158,21 @@ class InvestigationLoop:
         result: LoopResult,
     ) -> StepOutcome:
         async with semaphore:
+            # Per step, not only per wave. A wave is bounded by dependency
+            # structure, not by fanout, so a single wave of independent steps
+            # could otherwise blow through the ceiling between two wave-level
+            # checks.
+            try:
+                self._budget.check()
+            except BudgetExceeded as exc:
+                result.missing.append(
+                    MissingEvidence(
+                        what=step.why,
+                        why=str(exc),
+                        remediation="Raise the budget or narrow the question, then re-run.",
+                    )
+                )
+                return StepOutcome.UNAVAILABLE
             self._budget.record_step()
             seq = next(self._seq)
             started_at = utcnow()
@@ -217,6 +245,32 @@ class InvestigationLoop:
                     decision_id=decision.id,
                 )
                 return outcome
+            except Exception as exc:  # noqa: BLE001
+                # Anything that is not a NexusError - notably AuditWriteFailed,
+                # which is a RuntimeError - would otherwise escape the step,
+                # take down the whole wave, and orphan its siblings. One step
+                # failing is a gap in the evidence, never the end of the
+                # investigation.
+                log.exception("step_failed", investigation_id=investigation_id, step=step.id)
+                result.missing.append(
+                    MissingEvidence(
+                        what=step.why,
+                        why=f"{type(exc).__name__}: {exc}",
+                        source_system=step.call.resource.system,
+                    )
+                )
+                await self._emit(
+                    subject,
+                    investigation_id,
+                    seq,
+                    step,
+                    started_at,
+                    started,
+                    outcome=StepOutcome.UNAVAILABLE,
+                    error_class=type(exc).__name__,
+                    decision_id=decision.id,
+                )
+                return StepOutcome.UNAVAILABLE
 
             if outcome is StepOutcome.OK and tool_result is not None:
                 result.evidence.extend(tool_result.evidence)
@@ -273,6 +327,28 @@ class InvestigationLoop:
             )
         except Exception:  # noqa: BLE001 - trace loss must not fail the work
             log.exception("trace_write_failed", investigation_id=investigation_id, seq=seq)
+
+
+def _report_unattempted(
+    plan: list[PlanStep],
+    attempted: set[str],
+    result: LoopResult,
+    stop_reason: StopReason,
+) -> None:
+    """A step the loop never reached is still a gap in the evidence.
+
+    Without this, an investigation that stopped after its first wave looks
+    exactly like one that ran its whole plan.
+    """
+    for step in plan:
+        if step.id not in attempted:
+            result.missing.append(
+                MissingEvidence(
+                    what=step.why,
+                    why=f"not attempted: the investigation stopped early ({stop_reason})",
+                    source_system=step.call.resource.system,
+                )
+            )
 
 
 def _waves(plan: list[PlanStep]) -> list[list[PlanStep]]:

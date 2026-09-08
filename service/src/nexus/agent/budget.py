@@ -56,7 +56,7 @@ class BudgetTracker:
             raise BudgetExceeded("tool_calls", b.tool_calls, c.tool_calls)
         if c.plan_steps >= b.plan_steps:
             raise BudgetExceeded("plan_steps", b.plan_steps, c.plan_steps)
-        if c.replans > b.replans:
+        if c.replans >= b.replans:
             raise BudgetExceeded("replans", b.replans, c.replans)
         if c.tokens_in >= b.tokens_in:
             raise BudgetExceeded("tokens_in", b.tokens_in, c.tokens_in)

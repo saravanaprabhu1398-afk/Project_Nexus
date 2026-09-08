@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXUS</title>
+<style>
+:root{
+  --bg:#0b1113; --panel:#131c1e; --panel-2:#182325; --line:#22302f; --line-2:#334543;
+  --ink:#e4ebe9; --ink-2:#c2d0ce; --muted:#8ea3a3;
+  --accent:#3fd3ab; --accent-soft:#12302c;
+  --ok:#5cbe84; --warn:#e2a648; --crit:#f2687f; --info:#7aa2f7;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --bg:#f6f8f7; --panel:#fff; --panel-2:#eef2f1; --line:#d9e2e0; --line-2:#b9c8c5;
+    --ink:#111a1c; --ink-2:#3d4f51; --muted:#5c6e70;
+    --accent:#0f6f66; --accent-soft:#e0efec;
+    --ok:#2f6b46; --warn:#8f5a0b; --crit:#9d2f45; --info:#2b5ea8;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 var(--sans)}
+button,input,textarea,select{font:inherit;color:inherit}
+
+header{display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{font-weight:700;letter-spacing:.16em;font-size:13px;color:var(--accent);font-family:var(--mono)}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:var(--accent-soft);color:var(--accent)}
+header .spacer{flex:1}
+.ident{display:flex;gap:6px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.ident input{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:4px 7px;width:96px;font-family:var(--mono);font-size:12px}
+.ident input:focus{outline:2px solid var(--accent);outline-offset:1px}
+
+main{display:grid;grid-template-columns:270px minmax(0,1fr) 340px;height:calc(100vh - 53px)}
+@media (max-width:1100px){main{grid-template-columns:1fr;height:auto}}
+.col{overflow-y:auto;padding:16px}
+.col.left{border-right:1px solid var(--line);background:var(--panel)}
+.col.right{border-left:1px solid var(--line);background:var(--panel)}
+
+h2{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:600}
+
+.ask{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:20px}
+.ask textarea{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:10px;resize:vertical;min-height:62px}
+.ask textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.row label{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.row input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:110px;font-family:var(--mono);font-size:12px}
+button.go{background:var(--accent);color:var(--bg);border:0;border-radius:6px;padding:8px 18px;font-weight:600;cursor:pointer}
+button.go:hover{filter:brightness(1.08)}
+button.go:disabled{opacity:.5;cursor:not-allowed}
+
+.item{padding:10px;border-radius:6px;cursor:pointer;border:1px solid transparent;margin-bottom:6px}
+.item:hover{background:var(--panel-2)}
+.item.sel{background:var(--panel-2);border-color:var(--accent)}
+.item .q{font-size:13px;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.item .m{font-family:var(--mono);font-size:10.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+
+.pill{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:99px;white-space:nowrap}
+.pill.complete{background:rgba(92,190,132,.16);color:var(--ok)}
+.pill.investigating,.pill.queued,.pill.planning,.pill.synthesizing{background:rgba(226,166,72,.16);color:var(--warn)}
+.pill.failed,.pill.aborted{background:rgba(242,104,127,.16);color:var(--crit)}
+.pill.needs_input{background:rgba(122,162,247,.16);color:var(--info)}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;margin-bottom:16px}
+.card.summary{border-left:3px solid var(--accent)}
+.q-title{font-size:19px;font-weight:600;line-height:1.35;margin:0 0 12px}
+.meta{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:4px}
+.note{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+pre.sum{white-space:pre-wrap;margin:0;font:13px/1.6 var(--sans);color:var(--ink-2)}
+
+.ev{border:1px solid var(--line);border-radius:6px;margin-bottom:8px;overflow:hidden}
+.ev summary{padding:9px 11px;cursor:pointer;display:flex;gap:8px;align-items:center;background:var(--panel-2);list-style:none}
+.ev summary::-webkit-details-marker{display:none}
+.cite{font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:2px 6px;border-radius:3px}
+.ev .type{font-family:var(--mono);font-size:11px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev .body{padding:11px;font-size:12.5px;color:var(--ink-2);border-top:1px solid var(--line)}
+.ev .body .src{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:9px;word-break:break-all}
+.badge{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;padding:1px 5px;border-radius:3px;border:1px solid var(--line-2);color:var(--muted)}
+
+.missing{border-left:3px solid var(--warn)}
+.missing li{margin-bottom:9px;font-size:13px}
+.missing .why{color:var(--muted);font-size:12px}
+ul{margin:0;padding-left:18px}
+
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+td.mono{font-family:var(--mono);font-size:11px}
+.scroll{overflow-x:auto}
+
+.tabs{display:flex;gap:2px;margin-bottom:12px}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:6px 11px;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.empty{color:var(--muted);font-size:13px;padding:22px 0;text-align:center}
+.err{background:rgba(242,104,127,.1);border:1px solid var(--crit);color:var(--crit);border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:13px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-family:var(--mono);font-size:11.5px}
+.kv .k{color:var(--muted)}
+.spin{display:inline-block;width:9px;height:9px;border:2px solid var(--line-2);border-top-color:var(--accent);border-radius:50%;animation:s .7s linear infinite;vertical-align:-1px}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <span class="brand">NEXUS</span>
+  <span class="tag">read-only</span>
+  <span class="spacer"></span>
+  <div class="ident">
+    <label for="u">user</label><input id="u" value="eng-1">
+    <label for="t">tenant</label><input id="t" value="pilot-a">
+  </div>
+</header>
+
+<main>
+  <div class="col left">
+    <h2>Investigations</h2>
+    <div id="list"><div class="empty">None yet</div></div>
+  </div>
+
+  <div class="col mid">
+    <div class="ask">
+      <textarea id="q" placeholder="Why did customer_daily_ingestion fail?"></textarea>
+      <div class="row">
+        <label for="ws">workspace</label><input id="ws" value="ws">
+        <label for="job">job id</label><input id="job" value="1234">
+        <button class="go" id="go">Investigate</button>
+      </div>
+    </div>
+    <div id="err"></div>
+    <div id="detail"><div class="empty">Ask a question, or pick an investigation.</div></div>
+  </div>
+
+  <div class="col right">
+    <div class="tabs">
+      <button class="tab on" data-tab="evidence">Evidence</button>
+      <button class="tab" data-tab="audit">Audit</button>
+    </div>
+    <div id="side"><div class="empty">No investigation selected</div></div>
+  </div>
+</main>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+let current = null, tab = "evidence", poll = null;
+
+function headers() {
+  return {
+    "Content-Type": "application/json",
+    "X-Nexus-User": $("u").value.trim() || "eng-1",
+    "X-Nexus-Tenant": $("t").value.trim() || "pilot-a",
+  };
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: headers() });
+  const body = await res.json().catch(() => null);
+  if (!res.ok) {
+    const e = new Error((body && (body.message || body.detail)) || res.statusText);
+    e.code = body && body.error_code;
+    e.remediation = body && body.remediation;
+    throw e;
+  }
+  return body;
+}
+
+function showError(e) {
+  $("err").innerHTML = e
+    ? `<div class="err"><b>${esc(e.code || "Error")}</b> — ${esc(e.message)}` +
+      (e.remediation ? `<br><span style="opacity:.8">${esc(e.remediation)}</span>` : "") + `</div>`
+    : "";
+}
+
+const TERMINAL = new Set(["complete", "failed", "aborted", "needs_input"]);
+const fmt = (t) => t ? new Date(t).toLocaleString([], {month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
+
+async function refreshList() {
+  try {
+    const rows = await api("/v1/investigations");
+    $("list").innerHTML = rows.length ? rows.map(r => `
+      <div class="item ${r.id === current ? "sel" : ""}" data-id="${r.id}">
+        <div class="q">${esc(r.question || "(no question)")}</div>
+        <div class="m">
+          <span class="pill ${esc(r.status)}">${esc(r.status)}</span>
+          <span>${r.evidence_count} ev</span>
+          <span>${esc(fmt(r.created_at))}</span>
+        </div>
+      </div>`).join("") : `<div class="empty">None yet</div>`;
+    for (const el of $("list").querySelectorAll(".item")) {
+      el.onclick = () => select(el.dataset.id);
+    }
+  } catch (e) { showError(e); }
+}
+
+async function select(id) {
+  current = id;
+  if (poll) { clearInterval(poll); poll = null; }
+  await render();
+  const d = await api(`/v1/investigations/${id}`).catch(() => null);
+  if (d && !TERMINAL.has(d.status)) {
+    poll = setInterval(async () => {
+      const x = await api(`/v1/investigations/${current}`).catch(() => null);
+      await render();
+      if (!x || TERMINAL.has(x.status)) { clearInterval(poll); poll = null; refreshList(); }
+    }, 1200);
+  }
+  refreshList();
+}
+
+async function render() {
+  if (!current) return;
+  let d;
+  try { d = await api(`/v1/investigations/${current}`); }
+  catch (e) { showError(e); return; }
+  showError(null);
+
+  const running = !TERMINAL.has(d.status);
+  const c = d.consumed || {};
+  $("detail").innerHTML = `
+    <div class="card">
+      <div class="q-title">${esc(d.question || "(no question)")}</div>
+      <div class="meta">
+        <span class="pill ${esc(d.status)}">${running ? '<span class="spin"></span> ' : ""}${esc(d.status)}</span>
+        <span>${esc(fmt(d.created_at))}</span>
+        ${d.failure_code ? `<span style="color:var(--crit)">${esc(d.failure_code)}</span>` : ""}
+      </div>
+      <div class="kv" style="margin-top:12px">
+        <span class="k">tool calls</span><span>${c.tool_calls ?? 0}</span>
+        <span class="k">tokens</span><span>${c.tokens_in ?? 0} in / ${c.tokens_out ?? 0} out</span>
+        <span class="k">elapsed</span><span>${c.elapsed_ms ?? 0} ms</span>
+        <span class="k">correlation</span><span>${esc(d.correlation_id || "")}</span>
+      </div>
+    </div>
+
+    ${d.observation_summary ? `
+      <div class="card summary">
+        <div class="note">What the evidence reports — not a diagnosis</div>
+        <pre class="sum">${esc(d.observation_summary)}</pre>
+      </div>` : ""}
+
+    ${(d.missing_evidence || []).length ? `
+      <div class="card missing">
+        <div class="note">Missing evidence</div>
+        <ul>${d.missing_evidence.map(m => `
+          <li>${esc(m.what)}<div class="why">${esc(m.why)}${m.remediation ? " — " + esc(m.remediation) : ""}</div></li>
+        `).join("")}</ul>
+      </div>` : ""}
+  `;
+  await renderSide(d);
+}
+
+async function renderSide(d) {
+  if (tab === "evidence") {
+    const ev = d.evidence || [];
+    $("side").innerHTML = ev.length ? ev.map(e => `
+      <details class="ev">
+        <summary>
+          <span class="cite">${esc(e.citation_key)}</span>
+          <span class="type">${esc(e.evidence_type)}</span>
+          ${e.freshness !== "live" ? `<span class="badge">${esc(e.freshness)}</span>` : ""}
+          ${e.sensitivity === "confidential" ? `<span class="badge">conf</span>` : ""}
+        </summary>
+        <div class="body">
+          ${esc(e.content_summary || "(no summary)")}
+          <div class="src">${esc(e.source_system)} · ${esc(e.source_resource_id)}</div>
+        </div>
+      </details>`).join("") : `<div class="empty">No evidence collected</div>`;
+  } else {
+    let rows = [];
+    try { rows = await api(`/v1/investigations/${d.id}/audit`); } catch (e) { showError(e); }
+    $("side").innerHTML = rows.length ? `<div class="scroll"><table>
+      <thead><tr><th>Resource</th><th>Decision</th><th>Result</th></tr></thead>
+      <tbody>${rows.map(r => `<tr>
+        <td class="mono">${esc(r.resource)}</td>
+        <td class="mono" style="color:${r.decision === "permit" ? "var(--ok)" : "var(--crit)"}">${esc(r.decision || "")}</td>
+        <td class="mono">${esc(r.result_status)}</td>
+      </tr>`).join("")}</tbody></table></div>
+      <div class="note" style="margin-top:10px">${rows.length} policy-checked tool calls, append-only</div>`
+      : `<div class="empty">No audit entries</div>`;
+  }
+}
+
+$("go").onclick = async () => {
+  const q = $("q").value.trim();
+  if (!q) { $("q").focus(); return; }
+  $("go").disabled = true;
+  try {
+    const created = await api("/v1/investigations", {
+      method: "POST",
+      body: JSON.stringify({
+        question: q,
+        intent: "diagnose_job_failure",
+        resource_refs: [{ type: "databricks_job", id: $("job").value.trim(), workspace: $("ws").value.trim() }],
+      }),
+    });
+    showError(null);
+    await select(created.id);
+  } catch (e) { showError(e); }
+  finally { $("go").disabled = false; }
+};
+
+$("q").addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") $("go").click();
+});
+
+for (const b of document.querySelectorAll(".tab")) {
+  b.onclick = async () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === b));
+    tab = b.dataset.tab;
+    if (current) await render();
+  };
+}
+
+refreshList();
+setInterval(() => { if (!poll) refreshList(); }, 5000);
+</script>
+</body>
+</html>

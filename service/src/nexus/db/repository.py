@@ -71,6 +71,7 @@ class InvestigationRepository:
         status: InvestigationStatus,
         consumed: dict[str, int] | None = None,
         failure_code: str | None = None,
+        outcome: dict[str, Any] | None = None,
     ) -> None:
         row = await self.get(tenant_id=tenant_id, investigation_id=investigation_id)
         if row is None:
@@ -80,6 +81,8 @@ class InvestigationRepository:
             row.consumed = consumed
         if failure_code is not None:
             row.failure_code = failure_code
+        if outcome is not None:
+            row.outcome = outcome
         if status in {
             InvestigationStatus.COMPLETE,
             InvestigationStatus.FAILED,

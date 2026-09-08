@@ -40,6 +40,11 @@ class Investigation(Base):
     budget: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     consumed: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     failure_code: Mapped[str | None] = mapped_column(String(48))
+    #: stop_reason, observation_summary and missing_evidence. Persisted rather
+    #: than held in process memory: an investigation that stopped early must
+    #: still look like one after a restart, and a second replica must see the
+    #: same answer.
+    outcome: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     correlation_id: Mapped[str] = mapped_column(String(64), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(

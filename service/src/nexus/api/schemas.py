@@ -70,11 +70,25 @@ class InvestigationOut(BaseModel):
     completed_at: datetime | None
     consumed: dict[str, int] | None
     failure_code: str | None
+    #: Why the loop stopped. Without this, an investigation cut short after its
+    #: first wave is indistinguishable from one that ran its whole plan.
+    stop_reason: str | None = None
     #: What the evidence reports. Not a diagnosis - root-cause reasoning,
     #: confidence and the groundedness guardrail are Phase 3.
     observation_summary: str | None = None
     evidence: list[EvidenceOut] = []
     missing_evidence: list[MissingEvidenceOut] = []
+
+
+class InvestigationSummary(BaseModel):
+    """Row shape for the history list - deliberately smaller than the detail."""
+
+    id: str
+    status: str
+    question: str | None
+    created_at: datetime
+    completed_at: datetime | None
+    evidence_count: int = 0
 
 
 class AuditEntryOut(BaseModel):

@@ -18,7 +18,12 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./nexus.db"
     redis_url: str = "redis://localhost:6379/0"
 
+    # "anthropic" uses a real model; "echo" is the deterministic local stub.
     model_provider: str = "echo"
+    frontier_model: str = "claude-opus-5"
+    small_model: str = "claude-haiku-4-5"
+    model_max_tokens: int = 16_000
+    model_timeout_s: float = 120.0
 
     # Budgets - SDD 9.6
     budget_wall_clock_ms: int = 300_000

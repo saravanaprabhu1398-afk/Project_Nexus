@@ -39,14 +39,37 @@ def test_token_ceiling_is_enforced():
     assert exc.value.dimension == "tokens_in"
 
 
-def test_replan_ceiling_allows_the_limit_and_rejects_beyond():
+def test_replan_ceiling_matches_every_other_dimension():
+    """check() gates the next unit of work, so consumed == limit means stop.
+
+    This previously used `>` where every other dimension used `>=`, quietly
+    allowing one replan more than configured - and the old test encoded that
+    off-by-one as the expected behaviour.
+    """
     t = BudgetTracker(_budget(replans=2))
-    for _ in range(2):
-        t.record_replan()
-    t.check()
+    t.check()  # 0 used - a replan is allowed
     t.record_replan()
-    with pytest.raises(BudgetExceeded):
+    t.check()  # 1 used - one more is allowed
+    t.record_replan()
+    with pytest.raises(BudgetExceeded) as exc:  # 2 used - the limit is reached
         t.check()
+    assert exc.value.dimension == "replans"
+
+
+def test_every_dimension_stops_at_its_limit_not_one_past_it():
+    """Guards the consistency itself: no dimension may be more generous."""
+    cases = [
+        ("tool_calls", lambda t: t.record_tool_call()),
+        ("plan_steps", lambda t: t.record_step()),
+        ("replans", lambda t: t.record_replan()),
+    ]
+    for dimension, record in cases:
+        t = BudgetTracker(_budget(**{dimension: 1}))
+        t.check()
+        record(t)
+        with pytest.raises(BudgetExceeded) as exc:
+            t.check()
+        assert exc.value.dimension == dimension, f"{dimension} allowed one too many"
 
 
 def test_snapshot_reports_every_dimension():

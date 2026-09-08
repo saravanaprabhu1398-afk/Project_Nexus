@@ -20,6 +20,7 @@ from nexus.api.schemas import (
     EvidenceOut,
     InvestigationCreated,
     InvestigationOut,
+    InvestigationSummary,
     MissingEvidenceOut,
 )
 from nexus.db.models import EvidenceRow, Investigation
@@ -137,13 +138,28 @@ async def _execute(
             status=InvestigationStatus.INVESTIGATING,
         )
 
-    outcome = await orchestrator.run(
-        subject=subject,
-        investigation_id=investigation_id,
-        intent=intent,
-        resource=resource,
-        sensitivity_ceiling=ceiling,
-    )
+    try:
+        outcome = await orchestrator.run(
+            subject=subject,
+            investigation_id=investigation_id,
+            intent=intent,
+            resource=resource,
+            sensitivity_ceiling=ceiling,
+        )
+    except Exception as exc:  # noqa: BLE001
+        # Without this the investigation stays at "investigating" forever, with
+        # no failure code and no evidence - indistinguishable from one that is
+        # still running.
+        log.exception("investigation_failed", investigation_id=investigation_id)
+        async with get_session() as session:
+            await InvestigationRepository(session).set_status(
+                tenant_id=subject.tenant_id,
+                investigation_id=investigation_id,
+                status=InvestigationStatus.FAILED,
+                failure_code=str(ErrorCode.INTERNAL_ERROR),
+                outcome={"error": f"{type(exc).__name__}: {exc}"},
+            )
+        return
 
     async with get_session() as session:
         rows = [
@@ -177,9 +193,49 @@ async def _execute(
             status=outcome.status,
             consumed=outcome.consumed,
             failure_code=outcome.failure_code,
+            outcome={
+                "stop_reason": str(outcome.loop.stop_reason),
+                "observation_summary": outcome.observation_summary,
+                "missing_evidence": [
+                    {
+                        "what": m.what,
+                        "why": m.why,
+                        "source_system": m.source_system,
+                        "remediation": m.remediation,
+                    }
+                    for m in outcome.loop.missing
+                ],
+            },
         )
-    app.state.missing_evidence[investigation_id] = outcome.loop.missing
-    app.state.observation_summary[investigation_id] = outcome.observation_summary
+
+
+@router.get("", response_model=list[InvestigationSummary])
+async def list_investigations(
+    subject: CurrentSubject,
+    limit: int = 50,
+) -> list[InvestigationSummary]:
+    """The caller's own investigations. Tenant-scoped by the repository."""
+    async with get_session() as session:
+        rows = await InvestigationRepository(session).list_for_subject(
+            tenant_id=subject.tenant_id, subject_id=subject.user_id, limit=limit
+        )
+        evidence_repo = EvidenceRepository(session)
+        summaries = []
+        for row in rows:
+            evidence = await evidence_repo.list_for_investigation(
+                tenant_id=subject.tenant_id, investigation_id=row.id
+            )
+            summaries.append(
+                InvestigationSummary(
+                    id=row.id,
+                    status=row.status,
+                    question=row.question_text,
+                    created_at=row.created_at,
+                    completed_at=row.completed_at,
+                    evidence_count=len(evidence),
+                )
+            )
+    return summaries
 
 
 @router.get("/{investigation_id}", response_model=InvestigationOut)
@@ -202,7 +258,7 @@ async def get_investigation(
             tenant_id=subject.tenant_id, investigation_id=investigation_id
         )
 
-    missing = request.app.state.missing_evidence.get(investigation_id, [])
+    stored = row.outcome or {}
     return InvestigationOut(
         id=row.id,
         status=row.status,
@@ -214,14 +270,10 @@ async def get_investigation(
         completed_at=row.completed_at,
         consumed=row.consumed,
         failure_code=row.failure_code,
-        observation_summary=request.app.state.observation_summary.get(investigation_id),
+        stop_reason=stored.get("stop_reason"),
+        observation_summary=stored.get("observation_summary"),
         evidence=[_evidence_out(e) for e in evidence],
-        missing_evidence=[
-            MissingEvidenceOut(
-                what=m.what, why=m.why, source_system=m.source_system, remediation=m.remediation
-            )
-            for m in missing
-        ],
+        missing_evidence=[MissingEvidenceOut(**m) for m in stored.get("missing_evidence", [])],
     )
 
 
