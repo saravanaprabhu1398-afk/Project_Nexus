@@ -46,5 +46,12 @@ services:
       # holds no UPDATE or DELETE on audit_record (NX-022).
       NEXUS_DATABASE_URL: postgresql+asyncpg://nexus_app:nexus_app@postgres:5432/nexus
       NEXUS_REDIS_URL: redis://redis:6379/0
-      NEXUS_MODEL_PROVIDER: echo
+      # Passed through from your shell, with the safe stub as the default. These
+      # were hardcoded to the stub, so an exported key was silently ignored and
+      # the container always ran the echo adapter.
+      NEXUS_MODEL_PROVIDER: ${NEXUS_MODEL_PROVIDER:-echo}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      NEXUS_CONNECTOR: ${NEXUS_CONNECTOR:-mock}
+      DATABRICKS_HOST: ${DATABRICKS_HOST:-}
+      DATABRICKS_TOKEN: ${DATABRICKS_TOKEN:-}
     ports: ["8000:8000"]
