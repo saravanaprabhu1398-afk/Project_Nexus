@@ -26,8 +26,18 @@ you saw something else.
 substituting; ids are captured into shell variables. Run the sections in order
 within a phase - later checks depend on data earlier ones create.
 
+> **Every command below runs from `service/`, not the repository root.** Five of
+> the six failures in the first real run of this guide were nothing but a wrong
+> working directory: `sqlite3` silently created an empty database, `uv run`
+> could not import `nexus`, `pytest` would not spawn, and `docker compose` could
+> not find its config. Check before each phase:
+>
+> ```bash
+> basename "$PWD"    # must print: service
+> ```
+
 ```bash
-cd service
+cd service        # from the repository root
 uv sync --python 3.12
 ```
 
@@ -93,6 +103,8 @@ pure advocacy with no downside stated, the record is not doing its job.
 ---
 
 # Phase 1 — Core agent platform
+
+> Run from `service/` — `basename "$PWD"` must print `service`.
 
 **Delivered:** a FastAPI service that accepts a question, plans, calls tools
 through a governed gateway, collects cited evidence, and records an audit trail.
@@ -218,10 +230,15 @@ cannot enter the registry to be denied later — it cannot exist.
 Then confirm nothing in the connector can write:
 
 ```bash
-grep -nE "\.(post|put|patch|delete)\(" src/nexus/tools/databricks/*.py; echo "exit $?"
+grep -rnE "\.(post|put|patch|delete)\(" src/nexus/tools/databricks/
+echo "(no output above = no write verb anywhere in the connector)"
 ```
 
-**Expect:** no matches. The client exposes only `get`.
+**Expect:** no output. The client exposes only `get`.
+
+> Written as `-r` against the directory rather than a `*.py` glob: zsh treats an
+> unmatched glob as a hard error (`zsh: no matches found`), where bash passes it
+> through. The directory form behaves the same in both shells.
 
 ### 1.5 A policy decision cannot be reused — negative check
 
@@ -302,6 +319,8 @@ existed.
 ---
 
 # Phase 1 — Migrations (NX-030)
+
+> Run from `service/` — `basename "$PWD"` must print `service`.
 
 **Delivered:** Alembic, two revisions, and the schema built only by migrations —
 `create_all` is gone.
@@ -392,6 +411,8 @@ sqlite3 "$R" ".tables"
 
 # Phase 1 — Append-only audit **[PG]**
 
+> Run from `service/` — `basename "$PWD"` must print `service`.
+
 **Delivered:** `audit_record` is insert-and-select only for the application role.
 
 **Fixed:** the first version applied a `REVOKE` correctly — `pg_class.relacl`
@@ -438,18 +459,33 @@ only check that proves it.
 
 ### 3.3 The migration refuses a vacuous configuration — negative check
 
+The superuser check lives inside revision 0001, so it only runs when 0001 runs.
+Against your already-migrated database `upgrade head` is a no-op and the check
+never executes — it exits 0 and looks like the guard failed. Use a throwaway
+database instead, which also leaves your data alone:
+
 ```bash
-docker compose run --rm -e NEXUS_DB_APP_ROLE=nexus migrate alembic upgrade head 2>&1 | tail -3
+docker compose exec -T postgres psql -U nexus -d postgres -c "create database guardtest;"
+docker compose run --rm \
+  -e NEXUS_DB_APP_ROLE=nexus \
+  -e NEXUS_DATABASE_URL="postgresql+asyncpg://nexus:nexus@postgres:5432/guardtest" \
+  migrate alembic upgrade head 2>&1 | grep -iE "superuser|vacuous"
+docker compose exec -T postgres psql -U nexus -d postgres -c "drop database guardtest;"
 ```
 
-**Expect:** it refuses, saying the role is a superuser and the guarantee would be
-vacuous.
+**Expect:** `RuntimeError: application role 'nexus' is a superuser, which
+bypasses table ACLs. The append-only guarantee on audit_record would be
+vacuous.`
 
-Then restore the stack: `docker compose run --rm migrate alembic upgrade head`.
+**Why the throwaway database:** a negative check that cannot fire is worse than
+no check — it reports success and proves nothing. The first version of this
+section did exactly that.
 
 ---
 
 # Phase 2 (in progress) — Databricks connector
+
+> Run from `service/` — `basename "$PWD"` must print `service`.
 
 **Delivered:** a read-only connector, a capability probe, and a fixture
 recorder. Wired to fall back to mock tools when credentials are absent.
