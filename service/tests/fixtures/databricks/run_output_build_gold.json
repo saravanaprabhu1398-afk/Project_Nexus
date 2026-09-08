@@ -1,0 +1,74 @@
+{
+  "metadata": {
+    "cleanup_duration": 0,
+    "creator_user_name": "[redacted]",
+    "description": "Refresh dim_drug and fact_adverse_events from Silver.",
+    "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+    "end_time": 1788580905547,
+    "execution_duration": 50000,
+    "format": "MULTI_TASK",
+    "job_id": 437494778895449,
+    "job_run_id": 496942977107050,
+    "number_in_job": 16476479896585,
+    "original_attempt_run_id": 16476479896585,
+    "parent_run_id": 496942977107050,
+    "run_id": 16476479896585,
+    "run_name": "build_gold",
+    "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+    "run_type": "JOB_RUN",
+    "setup_duration": 2000,
+    "start_time": 1788580852895,
+    "state": {
+      "life_cycle_state": "TERMINATED",
+      "result_state": "SUCCESS",
+      "state_message": "",
+      "user_cancelled_or_timedout": false
+    },
+    "status": {
+      "state": "TERMINATED",
+      "termination_details": {
+        "code": "SUCCESS",
+        "message": "",
+        "type": "SUCCESS"
+      }
+    },
+    "task_key": "build_gold",
+    "tasks": [
+      {
+        "attempt_number": 0,
+        "cleanup_duration": 0,
+        "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+        "end_time": 1788580905547,
+        "execution_duration": 50000,
+        "notebook_task": {
+          "base_parameters": {
+            "catalog": "clinical-lab"
+          },
+          "notebook_path": "/Workspace/Repos/[redacted]/data-document-intelligence-platform/phase3_gold/notebooks/01_build_gold",
+          "source": "WORKSPACE"
+        },
+        "run_id": 16476479896585,
+        "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+        "setup_duration": 2000,
+        "start_time": 1788580852895,
+        "state": {
+          "life_cycle_state": "TERMINATED",
+          "result_state": "SUCCESS",
+          "state_message": "",
+          "user_cancelled_or_timedout": false
+        },
+        "status": {
+          "state": "TERMINATED",
+          "termination_details": {
+            "code": "SUCCESS",
+            "message": "",
+            "type": "SUCCESS"
+          }
+        },
+        "task_key": "build_gold"
+      }
+    ],
+    "trigger": "ONE_TIME"
+  },
+  "notebook_output": {}
+}

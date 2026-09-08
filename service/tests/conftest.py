@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from argparse import Namespace
 from pathlib import Path
 
 import pytest
@@ -22,10 +23,15 @@ from nexus.tools.registry import ToolRegistry
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
 
 
-def alembic_config(database_url: str) -> Config:
+def alembic_config(database_url: str, *, allow_unversioned: bool = False) -> Config:
     cfg = Config(str(SERVICE_ROOT / "alembic.ini"))
     cfg.set_main_option("script_location", str(SERVICE_ROOT / "migrations"))
     cfg.set_main_option("sqlalchemy.url", database_url)
+    if allow_unversioned:
+        # env.py reads x-arguments from cmd_opts, which only the CLI populates.
+        # This is the documented bypass for a caller that knows the database
+        # predates the chain - repairing it is the whole point of `stamp`.
+        cfg.cmd_opts = Namespace(x=["allow_unversioned=true"])
     return cfg
 
 

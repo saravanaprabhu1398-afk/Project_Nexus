@@ -1,0 +1,256 @@
+{
+  "schemas": [
+    {
+      "browse_only": false,
+      "cache_version_info": {
+        "metastore_version": -1
+      },
+      "catalog_name": "clinical-lab",
+      "catalog_type": "MANAGED_CATALOG",
+      "comment": "Raw ingested documents \u2014 immutable audit log",
+      "created_at": 1777830479201,
+      "created_by": "[redacted]",
+      "effective_auto_maintenance_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "effective_predictive_optimization_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "enable_auto_maintenance": "INHERIT",
+      "enable_predictive_optimization": "INHERIT",
+      "etag": "CAESCAAAAZ5d5SQz",
+      "full_name": "clinical-lab.bronze",
+      "metastore_id": "ae03b04d-5b84-4346-8879-a6344efd5747",
+      "metastore_version": -1,
+      "name": "bronze",
+      "owner": "[redacted]",
+      "properties": {
+        "owner": "root"
+      },
+      "related_entity_hints": {
+        "policy": {
+          "exists": false
+        },
+        "tag": {
+          "exists": false
+        }
+      },
+      "schema_id": "d980f6f7-f62d-45c5-8ef6-a34518dde097",
+      "securable_kind": "SCHEMA_DB_STORAGE",
+      "securable_type": "SCHEMA",
+      "updated_at": 1779691758643,
+      "updated_by": "[redacted]"
+    },
+    {
+      "browse_only": false,
+      "cache_version_info": {
+        "metastore_version": -1
+      },
+      "catalog_name": "clinical-lab",
+      "catalog_type": "MANAGED_CATALOG",
+      "comment": "Default schema (auto-created)",
+      "created_at": 1777826880960,
+      "created_by": "[redacted]",
+      "effective_auto_maintenance_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "effective_predictive_optimization_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "enable_auto_maintenance": "INHERIT",
+      "enable_predictive_optimization": "INHERIT",
+      "etag": "CAESCAAAAZ3uvV3A",
+      "full_name": "clinical-lab.default",
+      "metastore_id": "ae03b04d-5b84-4346-8879-a6344efd5747",
+      "metastore_version": -1,
+      "name": "default",
+      "owner": "[redacted]",
+      "related_entity_hints": {
+        "policy": {
+          "exists": false
+        },
+        "tag": {
+          "exists": false
+        }
+      },
+      "schema_id": "a471b13b-8b3a-403f-928c-0f252c3b2316",
+      "securable_kind": "SCHEMA_DB_STORAGE",
+      "securable_type": "SCHEMA",
+      "updated_at": 1777826880960,
+      "updated_by": "[redacted]"
+    },
+    {
+      "browse_only": false,
+      "cache_version_info": {
+        "metastore_version": -1
+      },
+      "catalog_name": "clinical-lab",
+      "catalog_type": "MANAGED_CATALOG",
+      "comment": "Curated analytics tables and vector search metadata",
+      "created_at": 1777830480533,
+      "created_by": "[redacted]",
+      "effective_auto_maintenance_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "effective_predictive_optimization_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "enable_auto_maintenance": "INHERIT",
+      "enable_predictive_optimization": "INHERIT",
+      "etag": "CAESCAAAAZ/O99fB",
+      "full_name": "clinical-lab.gold",
+      "metastore_id": "ae03b04d-5b84-4346-8879-a6344efd5747",
+      "metastore_version": -1,
+      "name": "gold",
+      "owner": "[redacted]",
+      "properties": {
+        "owner": "root"
+      },
+      "related_entity_hints": {
+        "policy": {
+          "exists": false
+        },
+        "tag": {
+          "exists": false
+        }
+      },
+      "schema_id": "29638788-843a-42d5-b7c6-006bf94216e2",
+      "securable_kind": "SCHEMA_DB_STORAGE",
+      "securable_type": "SCHEMA",
+      "updated_at": 1785883776961,
+      "updated_by": "[redacted]"
+    },
+    {
+      "browse_only": false,
+      "cache_version_info": {
+        "metastore_version": -1
+      },
+      "catalog_name": "clinical-lab",
+      "catalog_type": "MANAGED_CATALOG",
+      "comment": "Information schema (auto-created)",
+      "created_at": 1777826880976,
+      "created_by": "System user",
+      "etag": "CAESCAAAAZ3uvV3Q",
+      "full_name": "clinical-lab.information_schema",
+      "metastore_id": "ae03b04d-5b84-4346-8879-a6344efd5747",
+      "metastore_version": -1,
+      "name": "information_schema",
+      "owner": "System user",
+      "related_entity_hints": {
+        "policy": {
+          "exists": false
+        },
+        "tag": {
+          "exists": false
+        }
+      },
+      "schema_id": "714ba536-41d3-4aec-876c-ad49d160c521",
+      "securable_kind": "SCHEMA_SYSTEM",
+      "securable_type": "SCHEMA",
+      "updated_at": 1777826880976,
+      "updated_by": "System user"
+    },
+    {
+      "browse_only": false,
+      "cache_version_info": {
+        "metastore_version": -1
+      },
+      "catalog_name": "clinical-lab",
+      "catalog_type": "MANAGED_CATALOG",
+      "comment": "AI-extracted structured fields with quality metadata",
+      "created_at": 1777830480055,
+      "created_by": "[redacted]",
+      "effective_auto_maintenance_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "effective_predictive_optimization_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "enable_auto_maintenance": "INHERIT",
+      "enable_predictive_optimization": "INHERIT",
+      "etag": "CAESCAAAAZ5xy5LG",
+      "full_name": "clinical-lab.silver",
+      "metastore_id": "ae03b04d-5b84-4346-8879-a6344efd5747",
+      "metastore_version": -1,
+      "name": "silver",
+      "owner": "[redacted]",
+      "properties": {
+        "owner": "root"
+      },
+      "related_entity_hints": {
+        "policy": {
+          "exists": false
+        },
+        "tag": {
+          "exists": false
+        }
+      },
+      "schema_id": "41d01a26-c3c9-4353-ba5c-cb59c5eb65c8",
+      "securable_kind": "SCHEMA_DB_STORAGE",
+      "securable_type": "SCHEMA",
+      "updated_at": 1780025627334,
+      "updated_by": "[redacted]"
+    },
+    {
+      "browse_only": false,
+      "cache_version_info": {
+        "metastore_version": -1
+      },
+      "catalog_name": "clinical-lab",
+      "catalog_type": "MANAGED_CATALOG",
+      "comment": "Trust layer: data contracts, expectation violations, freshness + cost telemetry.",
+      "created_at": 1779993262562,
+      "created_by": "[redacted]",
+      "effective_auto_maintenance_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "effective_predictive_optimization_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "enable_auto_maintenance": "INHERIT",
+      "enable_predictive_optimization": "INHERIT",
+      "etag": "CAESCAAAAZ7GJqPM",
+      "full_name": "clinical-lab.trust",
+      "metastore_id": "ae03b04d-5b84-4346-8879-a6344efd5747",
+      "metastore_version": -1,
+      "name": "trust",
+      "owner": "[redacted]",
+      "properties": {
+        "owner": "root"
+      },
+      "related_entity_hints": {
+        "policy": {
+          "exists": false
+        },
+        "tag": {
+          "exists": false
+        }
+      },
+      "schema_id": "7a849254-da5b-4f82-aba5-85649235dbed",
+      "securable_kind": "SCHEMA_DB_STORAGE",
+      "securable_type": "SCHEMA",
+      "updated_at": 1781440881612,
+      "updated_by": "[redacted]"
+    }
+  ]
+}

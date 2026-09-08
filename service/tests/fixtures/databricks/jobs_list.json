@@ -1,0 +1,180 @@
+{
+  "jobs": [
+    {
+      "created_time": 1779993129326,
+      "creator_user_name": "[redacted]",
+      "job_id": 437494778895449,
+      "run_as_user_name": "[redacted]",
+      "settings": {
+        "deployment": {
+          "kind": "BUNDLE",
+          "metadata_file_path": "/Workspace/Users/[redacted]/.bundle/clinical-document-intelligence-platform/dev/state/metadata.json"
+        },
+        "duration_warning_seconds": 3600,
+        "edit_mode": "EDITABLE",
+        "email_notifications": {
+          "no_alert_for_skipped_runs": true,
+          "on_failure": [
+            "[redacted]"
+          ]
+        },
+        "format": "MULTI_TASK",
+        "health": {
+          "rules": [
+            {
+              "metric": "RUN_DURATION_SECONDS",
+              "op": "GREATER_THAN",
+              "value": 3600
+            }
+          ]
+        },
+        "max_concurrent_runs": 1,
+        "name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+        "queue": {
+          "enabled": true
+        },
+        "schedule": {
+          "pause_status": "UNPAUSED",
+          "quartz_cron_expression": "0 0 4 * * ?",
+          "timezone_id": "UTC"
+        },
+        "tags": {
+          "dev": "saravanaprabhu1398"
+        },
+        "timeout_seconds": 7200
+      }
+    },
+    {
+      "created_time": 1779993129298,
+      "creator_user_name": "[redacted]",
+      "job_id": 603372719410608,
+      "run_as_user_name": "[redacted]",
+      "settings": {
+        "deployment": {
+          "kind": "BUNDLE",
+          "metadata_file_path": "/Workspace/Users/[redacted]/.bundle/clinical-document-intelligence-platform/dev/state/metadata.json"
+        },
+        "duration_warning_seconds": 1800,
+        "edit_mode": "EDITABLE",
+        "email_notifications": {
+          "no_alert_for_skipped_runs": true,
+          "on_failure": [
+            "[redacted]"
+          ]
+        },
+        "format": "MULTI_TASK",
+        "health": {
+          "rules": [
+            {
+              "metric": "RUN_DURATION_SECONDS",
+              "op": "GREATER_THAN",
+              "value": 1800
+            }
+          ]
+        },
+        "max_concurrent_runs": 1,
+        "name": "[dev saravanaprabhu1398] clinical-docs-trust-checks-dev",
+        "queue": {
+          "enabled": true
+        },
+        "schedule": {
+          "pause_status": "UNPAUSED",
+          "quartz_cron_expression": "0 0 5 * * ?",
+          "timezone_id": "UTC"
+        },
+        "tags": {
+          "dev": "saravanaprabhu1398"
+        },
+        "timeout_seconds": 3600
+      }
+    },
+    {
+      "created_time": 1778429376777,
+      "creator_user_name": "[redacted]",
+      "job_id": 609723759292961,
+      "run_as_user_name": "[redacted]",
+      "settings": {
+        "deployment": {
+          "kind": "BUNDLE",
+          "metadata_file_path": "/Workspace/Users/[redacted]/.bundle/clinical-document-intelligence-platform/dev/state/metadata.json"
+        },
+        "duration_warning_seconds": 14400,
+        "edit_mode": "EDITABLE",
+        "email_notifications": {
+          "no_alert_for_skipped_runs": true,
+          "on_failure": [
+            "[redacted]"
+          ]
+        },
+        "format": "MULTI_TASK",
+        "health": {
+          "rules": [
+            {
+              "metric": "RUN_DURATION_SECONDS",
+              "op": "GREATER_THAN",
+              "value": 14400
+            }
+          ]
+        },
+        "max_concurrent_runs": 1,
+        "name": "[dev saravanaprabhu1398] clinical-docs-silver-extraction-dev",
+        "queue": {
+          "enabled": true
+        },
+        "schedule": {
+          "pause_status": "UNPAUSED",
+          "quartz_cron_expression": "0 0 3 * * ?",
+          "timezone_id": "UTC"
+        },
+        "tags": {
+          "dev": "saravanaprabhu1398"
+        },
+        "timeout_seconds": 21600
+      }
+    },
+    {
+      "created_time": 1777827761806,
+      "creator_user_name": "[redacted]",
+      "job_id": 557824394014728,
+      "run_as_user_name": "[redacted]",
+      "settings": {
+        "deployment": {
+          "kind": "BUNDLE",
+          "metadata_file_path": "/Workspace/Users/[redacted]/.bundle/clinical-document-intelligence-platform/dev/state/metadata.json"
+        },
+        "duration_warning_seconds": 7200,
+        "edit_mode": "EDITABLE",
+        "email_notifications": {
+          "no_alert_for_skipped_runs": true,
+          "on_failure": [
+            "[redacted]"
+          ]
+        },
+        "format": "MULTI_TASK",
+        "health": {
+          "rules": [
+            {
+              "metric": "RUN_DURATION_SECONDS",
+              "op": "GREATER_THAN",
+              "value": 7200
+            }
+          ]
+        },
+        "max_concurrent_runs": 1,
+        "name": "[dev saravanaprabhu1398] clinical-docs-bronze-ingestion-dev",
+        "queue": {
+          "enabled": true
+        },
+        "schedule": {
+          "pause_status": "UNPAUSED",
+          "quartz_cron_expression": "0 0 2 * * ?",
+          "timezone_id": "UTC"
+        },
+        "tags": {
+          "dev": "saravanaprabhu1398"
+        },
+        "timeout_seconds": 10800
+      }
+    }
+  ]
+}

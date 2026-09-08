@@ -1,0 +1,159 @@
+{
+  "cleanup_duration": 0,
+  "creator_user_name": "[redacted]",
+  "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+  "end_time": 1788580941429,
+  "execution_duration": 0,
+  "format": "MULTI_TASK",
+  "job_id": 437494778895449,
+  "job_run_id": 496942977107050,
+  "number_in_job": 496942977107050,
+  "original_attempt_run_id": 496942977107050,
+  "run_duration": 136221,
+  "run_id": 496942977107050,
+  "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+  "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+  "run_type": "JOB_RUN",
+  "schedule": {
+    "pause_status": "UNPAUSED",
+    "quartz_cron_expression": "0 0 4 * * ?",
+    "timezone_id": "UTC"
+  },
+  "setup_duration": 0,
+  "start_time": 1788580805208,
+  "state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "status": {
+    "state": "TERMINATED",
+    "termination_details": {
+      "code": "SUCCESS",
+      "message": "",
+      "type": "SUCCESS"
+    }
+  },
+  "tasks": [
+    {
+      "attempt_number": 0,
+      "cleanup_duration": 0,
+      "depends_on": [
+        {
+          "task_key": "setup_gold"
+        }
+      ],
+      "description": "Refresh dim_drug and fact_adverse_events from Silver.",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1788580905547,
+      "execution_duration": 50000,
+      "notebook_task": {
+        "base_parameters": {
+          "catalog": "clinical-lab"
+        },
+        "notebook_path": "/Workspace/Repos/[redacted]/data-document-intelligence-platform/phase3_gold/notebooks/01_build_gold",
+        "source": "WORKSPACE"
+      },
+      "run_id": 16476479896585,
+      "run_if": "ALL_SUCCESS",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "setup_duration": 2000,
+      "start_time": 1788580852895,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "task_key": "build_gold"
+    },
+    {
+      "attempt_number": 0,
+      "cleanup_duration": 1000,
+      "description": "Create Gold tables if they do not exist.",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1788580852400,
+      "execution_duration": 41000,
+      "notebook_task": {
+        "base_parameters": {
+          "catalog": "clinical-lab"
+        },
+        "notebook_path": "/Workspace/Repos/[redacted]/data-document-intelligence-platform/phase3_gold/notebooks/00_setup_gold",
+        "source": "WORKSPACE"
+      },
+      "run_id": 843353032125385,
+      "run_if": "ALL_SUCCESS",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "setup_duration": 5000,
+      "start_time": 1788580805308,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "task_key": "setup_gold"
+    },
+    {
+      "attempt_number": 0,
+      "cleanup_duration": 0,
+      "depends_on": [
+        {
+          "task_key": "build_gold"
+        }
+      ],
+      "description": "Chunk SPL text into gold.drug_label_chunks for Vector Search.",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1788580941071,
+      "execution_duration": 34000,
+      "notebook_task": {
+        "base_parameters": {
+          "catalog": "clinical-lab",
+          "max_chars": "2000",
+          "min_chars": "100",
+          "overlap": "200"
+        },
+        "notebook_path": "/Workspace/Repos/[redacted]/data-document-intelligence-platform/phase3_gold/notebooks/02_chunk_text",
+        "source": "WORKSPACE"
+      },
+      "run_id": 148118357684121,
+      "run_if": "ALL_SUCCESS",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "setup_duration": 1000,
+      "start_time": 1788580905927,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "task_key": "chunk_text"
+    }
+  ],
+  "trigger": "PERIODIC"
+}

@@ -16,6 +16,14 @@ does not create or alter schema on boot: several replicas starting at once would
 race, and a failed migration would surface as a crash loop rather than a failed
 deploy. `docker compose` runs a one-shot `migrate` service before `api` starts.
 
+## A database that predates the chain
+
+If a database was created before migrations existed - by the old `create_all`
+path, or by autogenerating a revision against it without stamping - it holds the
+tables but no revision. Alembic then treats it as empty and dies replaying 0001.
+`env.py` detects this and says so; the message tells you whether to delete it or
+stamp it.
+
 ## Rollback
 
 Every revision implements `downgrade()`, and `tests/test_migrations.py` asserts

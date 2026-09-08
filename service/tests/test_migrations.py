@@ -116,3 +116,76 @@ async def test_tenant_id_leads_every_composite_index(tmp_path):
     assert composites, "expected composite indexes to exist"
     for name, cols in composites.items():
         assert cols[0] == "tenant_id", f"index {name} leads with {cols[0]!r}, not tenant_id"
+
+
+async def test_migration_actually_persists(tmp_path):
+    """Migrations reporting success is not the same as migrations committing.
+
+    A check added to env.py once queried the migration connection before Alembic
+    configured its transaction, which turned Alembic's begin_transaction() into
+    a nested no-op: both revisions logged "Running upgrade" while the schema and
+    the version row were rolled back. Nothing else caught it, because the log
+    said it worked.
+    """
+    url = f"sqlite+aiosqlite:///{tmp_path / 'persist.db'}"
+    await upgrade_to_head(url)
+
+    def _state(connection: Connection) -> tuple[str | None, bool]:
+        version = connection.exec_driver_sql("select version_num from alembic_version").scalar()
+        columns = {c["name"] for c in inspect(connection).get_columns("investigation")}
+        return version, "outcome" in columns
+
+    version, has_outcome = await _inspect(url, _state)
+    assert version is not None, "alembic_version is empty - nothing was committed"
+    assert has_outcome, "revision 0002 did not persist its column"
+
+
+async def test_a_database_predating_the_chain_is_explained_not_replayed(tmp_path):
+    """The failure mode the user actually hit.
+
+    Tables from the old create_all path with no recorded revision: Alembic
+    decides the database is empty and dies on "table already exists" inside a
+    hundred lines of traceback that never name the problem.
+    """
+    import pytest
+
+    url = f"sqlite+aiosqlite:///{tmp_path / 'legacy.db'}"
+    await upgrade_to_head(url)
+
+    # Strip the revision, leaving the tables: exactly the legacy shape.
+    def _unstamp(connection: Connection) -> None:
+        connection.exec_driver_sql("delete from alembic_version")
+        connection.commit()
+
+    await _inspect(url, _unstamp)
+
+    with pytest.raises(RuntimeError, match="predates the migration chain"):
+        await upgrade_to_head(url)
+
+
+async def test_stamp_is_not_blocked_by_the_guard(tmp_path):
+    """The guard must not block the recovery it recommends."""
+    import asyncio
+
+    from alembic import command
+
+    from tests.conftest import alembic_config
+
+    url = f"sqlite+aiosqlite:///{tmp_path / 'stampable.db'}"
+    await upgrade_to_head(url)
+
+    def _unstamp(connection: Connection) -> None:
+        connection.exec_driver_sql("delete from alembic_version")
+        connection.commit()
+
+    await _inspect(url, _unstamp)
+
+    # Must not raise, and must leave the database versioned again. The CLI form
+    # (`alembic stamp`) is unguarded automatically; a programmatic caller passes
+    # the documented bypass, because Alembic only populates cmd_opts from argv.
+    await asyncio.to_thread(command.stamp, alembic_config(url, allow_unversioned=True), "0001")
+    version = await _inspect(
+        url,
+        lambda c: c.exec_driver_sql("select version_num from alembic_version").scalar(),
+    )
+    assert version == "0001"

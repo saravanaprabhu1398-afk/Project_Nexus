@@ -1,0 +1,134 @@
+{
+  "catalogs": [
+    {
+      "accessible_in_current_workspace": true,
+      "browse_only": false,
+      "cache_version_info": {
+        "metastore_version": -1
+      },
+      "catalog_type": "MANAGED_CATALOG",
+      "created_at": 1777826880950,
+      "created_by": "[redacted]",
+      "effective_auto_maintenance_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "effective_predictive_optimization_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "enable_auto_maintenance": "INHERIT",
+      "enable_predictive_optimization": "INHERIT",
+      "etag": "CAESCAAAAZ/O99gt",
+      "full_name": "clinical-lab",
+      "id": "7c550c99-0822-4764-930b-941409011201",
+      "isolation_mode": "OPEN",
+      "metastore_id": "ae03b04d-5b84-4346-8879-a6344efd5747",
+      "metastore_version": -1,
+      "name": "clinical-lab",
+      "owner": "[redacted]",
+      "resource_name": "/metastores/ae03b04d-5b84-4346-8879-a6344efd5747/catalogs/7c550c99-0822-4764-930b-941409011201",
+      "securable_kind": "CATALOG_DB_STORAGE",
+      "securable_type": "CATALOG",
+      "storage_location": "s3://dbstorage-prod-tquew/uc/05a228fc-baf3-488e-aed1-10d3572d11ac/ae03b04d-5b84-4346-8879-a6344efd5747/__unitystorage/catalogs/7c550c99-0822-4764-930b-941409011201",
+      "storage_root": "s3://dbstorage-prod-tquew/uc/05a228fc-baf3-488e-aed1-10d3572d11ac/ae03b04d-5b84-4346-8879-a6344efd5747",
+      "updated_at": 1785883777069,
+      "updated_by": "[redacted]"
+    },
+    {
+      "accessible_in_current_workspace": true,
+      "browse_only": false,
+      "cache_version_info": {
+        "metastore_version": -1
+      },
+      "catalog_type": "MANAGED_CATALOG",
+      "created_at": 1776066854681,
+      "created_by": "[redacted]",
+      "effective_auto_maintenance_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "effective_predictive_optimization_flag": {
+        "inherited_from_name": "metastore_aws_us_east_2",
+        "inherited_from_type": "METASTORE",
+        "value": "ENABLE"
+      },
+      "enable_auto_maintenance": "INHERIT",
+      "enable_predictive_optimization": "INHERIT",
+      "etag": "CAESCAAAAZ2F1Yud",
+      "full_name": "workspace",
+      "id": "c8d303de-9249-4116-8363-a44b8617f2b1",
+      "isolation_mode": "ISOLATED",
+      "metastore_id": "ae03b04d-5b84-4346-8879-a6344efd5747",
+      "metastore_version": -1,
+      "name": "workspace",
+      "owner": "_workspace_admins_workspace_7474648608085587",
+      "resource_name": "/metastores/ae03b04d-5b84-4346-8879-a6344efd5747/catalogs/c8d303de-9249-4116-8363-a44b8617f2b1",
+      "securable_kind": "CATALOG_DB_STORAGE",
+      "securable_type": "CATALOG",
+      "storage_location": "s3://dbstorage-prod-tquew/uc/05a228fc-baf3-488e-aed1-10d3572d11ac/ae03b04d-5b84-4346-8879-a6344efd5747/__unitystorage/catalogs/c8d303de-9249-4116-8363-a44b8617f2b1",
+      "storage_root": "s3://dbstorage-prod-tquew/uc/05a228fc-baf3-488e-aed1-10d3572d11ac/ae03b04d-5b84-4346-8879-a6344efd5747",
+      "updated_at": 1776066857885,
+      "updated_by": "[redacted]"
+    },
+    {
+      "accessible_in_current_workspace": true,
+      "browse_only": false,
+      "cache_version_info": {
+        "metastore_version": -1
+      },
+      "catalog_type": "SYSTEM_CATALOG",
+      "comment": "These sample datasets are made available by third party data providers as well as open data sources. You can learn more about each data set by clicking on each one.\n\nTo discover more instantly available, free data sets across a wide range of industry use cases, visit [Databricks Marketplace](/marketplace).\n\nPlease note that the third party data sets represent a reduced portion of the available data attributes, volume, and data types available from providers, and are intended for educational rather than production purposes.",
+      "created_at": 1776066849972,
+      "created_by": "System user",
+      "delta_sharing_valid_through_timestamp": 1784024349493,
+      "etag": "CAESCAAAAZ9gIlEb",
+      "full_name": "samples",
+      "id": "3bdd3167-30e4-4a94-893e-17840d59eef6",
+      "isolation_mode": "OPEN",
+      "metastore_id": "ae03b04d-5b84-4346-8879-a6344efd5747",
+      "metastore_version": -1,
+      "name": "samples",
+      "owner": "System user",
+      "provisioning_info": {
+        "state": "ACTIVE"
+      },
+      "resource_name": "/metastores/ae03b04d-5b84-4346-8879-a6344efd5747/catalogs/3bdd3167-30e4-4a94-893e-17840d59eef6",
+      "securable_kind": "CATALOG_SYSTEM",
+      "securable_type": "CATALOG",
+      "updated_at": 1784024289563,
+      "updated_by": "System user"
+    },
+    {
+      "accessible_in_current_workspace": true,
+      "browse_only": false,
+      "cache_version_info": {
+        "metastore_version": -1
+      },
+      "catalog_type": "SYSTEM_CATALOG",
+      "comment": "System catalog (auto-created)",
+      "created_at": 1776066849248,
+      "created_by": "System user",
+      "delta_sharing_valid_through_timestamp": 1788333903090,
+      "etag": "CAESCAAAAaBhAOK8",
+      "full_name": "system",
+      "id": "a86bbf3c-06a1-488d-b061-722458c500d2",
+      "isolation_mode": "OPEN",
+      "metastore_id": "ae03b04d-5b84-4346-8879-a6344efd5747",
+      "metastore_version": -1,
+      "name": "system",
+      "owner": "System user",
+      "provisioning_info": {
+        "state": "ACTIVE"
+      },
+      "resource_name": "/metastores/ae03b04d-5b84-4346-8879-a6344efd5747/catalogs/a86bbf3c-06a1-488d-b061-722458c500d2",
+      "securable_kind": "CATALOG_SYSTEM",
+      "securable_type": "CATALOG",
+      "updated_at": 1788333843132,
+      "updated_by": "System user"
+    }
+  ]
+}

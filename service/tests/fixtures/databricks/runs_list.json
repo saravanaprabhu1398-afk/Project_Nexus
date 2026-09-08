@@ -1,0 +1,980 @@
+{
+  "next_page_token": "CAEQ5MCCof8zIL--3_SStCI=",
+  "runs": [
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1788580941429,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 496942977107050,
+      "number_in_job": 496942977107050,
+      "original_attempt_run_id": 496942977107050,
+      "run_duration": 136221,
+      "run_id": 496942977107050,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1788580805208,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1788494524990,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 941810550765585,
+      "number_in_job": 941810550765585,
+      "original_attempt_run_id": 941810550765585,
+      "run_duration": 119812,
+      "run_id": 941810550765585,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1788494405178,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1788408129351,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 618667423900885,
+      "number_in_job": 618667423900885,
+      "original_attempt_run_id": 618667423900885,
+      "run_duration": 124302,
+      "run_id": 618667423900885,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1788408005049,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1788321730167,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 195321380743378,
+      "number_in_job": 195321380743378,
+      "original_attempt_run_id": 195321380743378,
+      "run_duration": 125722,
+      "run_id": 195321380743378,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1788321604445,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1788235331447,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 419818080145511,
+      "number_in_job": 419818080145511,
+      "original_attempt_run_id": 419818080145511,
+      "run_duration": 128678,
+      "run_id": 419818080145511,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1788235202769,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1788148924225,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 81031533256622,
+      "number_in_job": 81031533256622,
+      "original_attempt_run_id": 81031533256622,
+      "run_duration": 120261,
+      "run_id": 81031533256622,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1788148803964,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1788062517203,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 587097159290463,
+      "number_in_job": 587097159290463,
+      "original_attempt_run_id": 587097159290463,
+      "run_duration": 113721,
+      "run_id": 587097159290463,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1788062403482,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787976128713,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 1012699198743640,
+      "number_in_job": 1012699198743640,
+      "original_attempt_run_id": 1012699198743640,
+      "run_duration": 124553,
+      "run_id": 1012699198743640,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787976004160,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787889722761,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 1107768814278243,
+      "number_in_job": 1107768814278243,
+      "original_attempt_run_id": 1107768814278243,
+      "run_duration": 117431,
+      "run_id": 1107768814278243,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787889605330,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787803330602,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 811520758367853,
+      "number_in_job": 811520758367853,
+      "original_attempt_run_id": 811520758367853,
+      "run_duration": 122328,
+      "run_id": 811520758367853,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787803208274,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787716947629,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 340109296863275,
+      "number_in_job": 340109296863275,
+      "original_attempt_run_id": 340109296863275,
+      "run_duration": 143658,
+      "run_id": 340109296863275,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787716803971,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787630533402,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 377397121205351,
+      "number_in_job": 377397121205351,
+      "original_attempt_run_id": 377397121205351,
+      "run_duration": 125125,
+      "run_id": 377397121205351,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787630408277,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787544138426,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 976737185513397,
+      "number_in_job": 976737185513397,
+      "original_attempt_run_id": 976737185513397,
+      "run_duration": 128349,
+      "run_id": 976737185513397,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787544010077,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787457704007,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 467222924557704,
+      "number_in_job": 467222924557704,
+      "original_attempt_run_id": 467222924557704,
+      "run_duration": 97459,
+      "run_id": 467222924557704,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787457606548,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787371309787,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 300173077181948,
+      "number_in_job": 300173077181948,
+      "original_attempt_run_id": 300173077181948,
+      "run_duration": 102701,
+      "run_id": 300173077181948,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787371207086,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787284928694,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 496939167451688,
+      "number_in_job": 496939167451688,
+      "original_attempt_run_id": 496939167451688,
+      "run_duration": 119859,
+      "run_id": 496939167451688,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787284808835,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787198505034,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 591610973251316,
+      "number_in_job": 591610973251316,
+      "original_attempt_run_id": 591610973251316,
+      "run_duration": 98754,
+      "run_id": 591610973251316,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787198406280,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787112105543,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 323226196865404,
+      "number_in_job": 323226196865404,
+      "original_attempt_run_id": 323226196865404,
+      "run_duration": 99668,
+      "run_id": 323226196865404,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787112005875,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1787025702909,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 378524624244782,
+      "number_in_job": 378524624244782,
+      "original_attempt_run_id": 378524624244782,
+      "run_duration": 95826,
+      "run_id": 378524624244782,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1787025607083,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1786939310320,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 677025359216454,
+      "number_in_job": 677025359216454,
+      "original_attempt_run_id": 677025359216454,
+      "run_duration": 100870,
+      "run_id": 677025359216454,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1786939209450,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1786852905645,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 707857302968382,
+      "number_in_job": 707857302968382,
+      "original_attempt_run_id": 707857302968382,
+      "run_duration": 101646,
+      "run_id": 707857302968382,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1786852803999,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1786766504379,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 861846370673443,
+      "number_in_job": 861846370673443,
+      "original_attempt_run_id": 861846370673443,
+      "run_duration": 97301,
+      "run_id": 861846370673443,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1786766407078,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1786680107751,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 1033352444369415,
+      "number_in_job": 1033352444369415,
+      "original_attempt_run_id": 1033352444369415,
+      "run_duration": 103680,
+      "run_id": 1033352444369415,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1786680004071,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1786593706443,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 204793453166809,
+      "number_in_job": 204793453166809,
+      "original_attempt_run_id": 204793453166809,
+      "run_duration": 97884,
+      "run_id": 204793453166809,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1786593608559,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    },
+    {
+      "cleanup_duration": 0,
+      "creator_user_name": "[redacted]",
+      "effective_performance_target": "PERFORMANCE_OPTIMIZED",
+      "end_time": 1786507310117,
+      "execution_duration": 0,
+      "format": "MULTI_TASK",
+      "job_id": 437494778895449,
+      "job_run_id": 151325364444991,
+      "number_in_job": 151325364444991,
+      "original_attempt_run_id": 151325364444991,
+      "run_duration": 103361,
+      "run_id": 151325364444991,
+      "run_name": "[dev saravanaprabhu1398] clinical-docs-gold-build-dev",
+      "run_page_url": "https://workspace.example.com?o=[redacted]#job/[redacted]/run/[redacted]",
+      "run_type": "JOB_RUN",
+      "schedule": {
+        "pause_status": "UNPAUSED",
+        "quartz_cron_expression": "0 0 4 * * ?",
+        "timezone_id": "UTC"
+      },
+      "setup_duration": 0,
+      "start_time": 1786507206756,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "status": {
+        "state": "TERMINATED",
+        "termination_details": {
+          "code": "SUCCESS",
+          "message": "",
+          "type": "SUCCESS"
+        }
+      },
+      "trigger": "PERIODIC"
+    }
+  ]
+}
